@@ -78,7 +78,9 @@ markers can be used.
   @pytest.fixture()
   @clean_qgis_layer
   def geojson() -> QgsVectorLayer:
-      return QgsVectorLayer("layer_file.geojson", "some layer")
+      layer = QgsVectorLayer("layer_file.geojson", "some layer")
+      QgsProject.instance().addMapLayer(layer)  #optionally add this to the project so it is accessible to the interface
+      return layer
 
   # This will be cleaned automatically since it contains the keyword "layer" in its name
   @pytest.fixture()
