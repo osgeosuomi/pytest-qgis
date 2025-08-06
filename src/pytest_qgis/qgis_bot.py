@@ -74,7 +74,7 @@ class QgisBot:
 
         capabilities = layer.dataProvider().capabilities()
 
-        if not capabilities & QgsVectorDataProvider.AddFeatures:
+        if not capabilities & QgsVectorDataProvider.Capability.AddFeatures:
             raise ValueError(f"Could not create feature for the layer {layer.name()}")
 
         new_feature = QgsVectorLayerUtils.createFeature(
@@ -83,7 +83,7 @@ class QgisBot:
         new_feature.setGeometry(geometry)
 
         if attributes is not None:
-            if capabilities & QgsVectorDataProvider.ChangeAttributeValues:
+            if capabilities & QgsVectorDataProvider.Capability.ChangeAttributeValues:
                 for field_name, value in attributes.items():
                     new_feature[field_name] = value
             else:
@@ -100,13 +100,13 @@ class QgisBot:
                 layer,
                 new_feature,
                 field_index,
-                QgsFieldConstraints.ConstraintStrengthSoft,
+                QgsFieldConstraints.ConstraintStrength.ConstraintStrengthSoft,
             )
             no_errors, error_messages = QgsVectorLayerUtils.validateAttribute(
                 layer,
                 new_feature,
                 field_index,
-                QgsFieldConstraints.ConstraintStrengthHard,
+                QgsFieldConstraints.ConstraintStrength.ConstraintStrengthHard,
             )
             if not no_warnings:
                 warnings[field.name()] = warning_messages
@@ -131,7 +131,7 @@ class QgisBot:
             layer, new_feature, False, self._iface.mainWindow(), True, context
         )
         dialog.show()
-        dialog.setMode(QgsAttributeEditorContext.AddFeatureMode)
+        dialog.setMode(QgsAttributeEditorContext.Mode.AddFeatureMode)
 
         utils.wait(show_dialog_timeout_milliseconds)
 

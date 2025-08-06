@@ -388,7 +388,7 @@ def _configure_qgis_map(
             "Click close to close the map and to end the test.\n"
             f"It will close automatically in {settings.timeout} seconds."
         )
-        message_box.addButton(QMessageBox.Close)
+        message_box.addButton(QMessageBox.StandardButton.Close)
         message_box.move(QgsApplication.instance().primaryScreen().geometry().topLeft())
         message_box.setWindowModality(QtCore.Qt.NonModal)
         message_box.show()

@@ -37,7 +37,7 @@ def layer_with_soft_constraint(layer_points: "QgsVectorLayer") -> "QgsVectorLaye
     layer_points.setFieldConstraint(
         field_idx,
         QgsFieldConstraints.Constraint.ConstraintNotNull,
-        QgsFieldConstraints.ConstraintStrengthSoft,
+        QgsFieldConstraints.ConstraintStrength.ConstraintStrengthSoft,
     )
 
     layer_points.startEditing()
@@ -54,7 +54,7 @@ def layer_with_hard_constraint(layer_points: "QgsVectorLayer") -> "QgsVectorLaye
     layer_points.setFieldConstraint(
         field_idx,
         QgsFieldConstraints.Constraint.ConstraintNotNull,
-        QgsFieldConstraints.ConstraintStrengthHard,
+        QgsFieldConstraints.ConstraintStrength.ConstraintStrengthHard,
     )
 
     layer_points.startEditing()
