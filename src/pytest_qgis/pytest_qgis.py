@@ -162,7 +162,8 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
             QgsProject.instance().legendLayersAdded.disconnect(_APP.processEvents)
         if not sip.isdeleted(_CANVAS) and _CANVAS is not None:
             _CANVAS.deleteLater()
-        _APP.exitQgis()
+        # NOTE: this cause a core dump with qgis/qgis image
+        #_APP.exitQgis()
         if _QGIS_CONFIG_PATH and _QGIS_CONFIG_PATH.exists():
             # TODO: https://github.com/osgeosuomi/pytest-qgis/issues/43
             with contextlib.suppress(PermissionError):
