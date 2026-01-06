@@ -55,7 +55,7 @@ from qgis.core import (
 )
 from qgis.gui import QgsMapCanvas
 from qgis.PyQt import sip
-from qgis.PyQt.QtCore import QObject, pyqtSignal, pyqtSlot
+from qgis.PyQt.QtCore import QObject, pyqtSignal, pyqtSlot, QSize
 from qgis.PyQt.QtWidgets import (
     QAction,
     QDockWidget,
@@ -237,6 +237,7 @@ class QgisInterface(QObject):
         :param action: Action to add to menu.
         :type action: QAction
         """
+        pass
 
     def addToolBarIcon(self, action: QAction) -> None:
         """Add an icon to the plugins toolbar.
@@ -244,6 +245,7 @@ class QgisInterface(QObject):
         :param action: Action to add to the toolbar.
         :type action: QAction
         """
+        pass
 
     def removeToolBarIcon(self, action: QAction) -> None:
         """Remove an action (icon) from the plugin toolbar.
@@ -251,6 +253,7 @@ class QgisInterface(QObject):
         :param action: Action to add to the toolbar.
         :type action: QAction
         """
+        pass
 
     def addToolBar(self, toolbar: str | QToolBar) -> QToolBar:
         """Add toolbar with specified name.
@@ -286,6 +289,13 @@ class QgisInterface(QObject):
         :param dock_widget: A dock widget to add to the UI.
         :type dock_widget: QDockWidget
         """
+        pass
+
+    def removeDockWidget(self, dockwidget: QDockWidget) -> None:
+        """Removes the specified dock widget from main window 
+            (without deleting it).
+        """
+        pass
 
     def legendInterface(self) -> QgsMapCanvas:
         """Get the legend."""
@@ -299,7 +309,17 @@ class QgisInterface(QObject):
         return self._layers
 
     def setActiveLayer(self, layer: QgsMapLayer) -> None:
-        """
-        Set the active layer (layer gets selected in the legend)
+        """Set the active layer (layer gets selected in the legend)
         """
         self._active_layer_id = layer.id()
+
+    def iconSize(self, dockedToolbar: bool) -> int: 
+        """Returns the toolbar icon size.
+        
+        :param dockedToolbar: If True, the icon size
+        for toolbars contained within dockes is returned
+        """
+        if dockedToolbar:
+            return QSize(16, 16)
+
+        return QSize(24, 24)
