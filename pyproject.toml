@@ -103,8 +103,7 @@ target-version = "py37"
 
 external = ["QGS"]
 
-[tool.ruff.lint]
-select = [
+lint.select = [
     "ANN", # flake8-annotations
     "ARG", # flake8-unused-arguments
     "B",   # flake8-bugbear
@@ -129,12 +128,7 @@ select = [
     "UP",  # pyupgrade
 ]
 
-ignore = [
-    "ANN101", # Missing type annotation for `self` in method
-    "PT004"  # Fixture does not return anything, add leading underscore
-]
-
-unfixable = [
+lint.unfixable = [
     "F401", # Unused imports
     "F841", # Unused variables
 ]

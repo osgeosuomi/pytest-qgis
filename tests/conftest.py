@@ -24,7 +24,7 @@ from qgis.core import QgsRasterLayer, QgsVectorLayer
 pytest_plugins = "pytester"
 
 
-@pytest.fixture()
+@pytest.fixture
 def gpkg(tmp_path: Path) -> Path:
     return get_copied_gpkg(tmp_path)
 
@@ -41,32 +41,32 @@ def gpkg_session(tmpdir_factory) -> Path:
     return get_copied_gpkg(tmp_path)
 
 
-@pytest.fixture()
+@pytest.fixture
 def layer_polygon(gpkg: Path):
     return get_gpkg_layer("polygon", gpkg)
 
 
-@pytest.fixture()
+@pytest.fixture
 def layer_polygon_function(gpkg: Path):
     return get_gpkg_layer("polygon", gpkg)
 
 
-@pytest.fixture()
+@pytest.fixture
 def lyr_polygon_module(gpkg_module: Path):
     return get_gpkg_layer("polygon", gpkg_module)
 
 
-@pytest.fixture()
+@pytest.fixture
 def layer_polygon_session(gpkg_session: Path):
     return get_gpkg_layer("polygon", gpkg_session)
 
 
-@pytest.fixture()
+@pytest.fixture
 def layer_polygon_3067(gpkg: Path):
     return get_gpkg_layer("polygon_3067", gpkg)
 
 
-@pytest.fixture()
+@pytest.fixture
 def raster_3067():
     return get_raster_layer(
         "small raster 3067",
@@ -74,7 +74,7 @@ def raster_3067():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def layer_points(gpkg: Path):
     return get_gpkg_layer("points", gpkg)
 

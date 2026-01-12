@@ -25,7 +25,7 @@ from tests.utils import IN_CI
 TIMEOUT = 10 if IN_CI else 1000
 
 
-@pytest.mark.with_pytest_qt()
+@pytest.mark.with_pytest_qt
 def test_attribute_dialog_change(
     qgis_iface, qgis_canvas, layer_points, qgis_bot, qtbot
 ):

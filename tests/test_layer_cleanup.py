@@ -29,7 +29,7 @@ parametrized tests.
 """
 
 
-@pytest.fixture()
+@pytest.fixture
 def stub_layer() -> MagicMock:
     return MagicMock(
         spec=QgsVectorLayer,

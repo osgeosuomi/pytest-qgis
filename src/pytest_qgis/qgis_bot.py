@@ -148,7 +148,7 @@ class QgisBot:
 
     @staticmethod
     def get_qgs_attribute_dialog_widgets_by_name(
-        widget: Union[QgsAttributeDialog, QWidget]
+        widget: Union[QgsAttributeDialog, QWidget],
     ) -> Dict[str, QWidget]:
         """
         Gets recursively all attribute dialog widgets by name.
