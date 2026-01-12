@@ -4,8 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytest-qgis"
-authors = [{ name = "Gispo Ltd.", email = "info@gispo.fi" }]
-maintainers = [{ name = "Gispo Ltd.", email = "info@gispo.fi" }]
+authors = [
+    { name = "Gispo Ltd.", email = "info@gispo.fi" },
+    { name = "OSGeo Suomi", email = "info@osgeo.fi" },
+]
+maintainers = [{ name = "OSGeo Suomi", email = "info@osgeo.fi" }]
 
 description = "A pytest plugin for testing QGIS python plugins"
 readme = "README.md"
@@ -27,6 +30,8 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
@@ -36,9 +41,9 @@ classifiers = [
 dependencies = ["pytest >= 6.0"]
 
 [project.urls]
-homepage = "https://github.com/GispoCoding/pytest-qgis"
-repository = "https://github.com/GispoCoding/pytest-qgis"
-changelog = "https://github.com/GispoCoding/pytest-qgis/CHANGELOG.md"
+homepage = "https://github.com/osgeosuomi/pytest-qgis"
+repository = "https://github.com/osgeosuomi/pytest-qgis"
+changelog = "https://github.com/osgeosuomi/pytest-qgis/blob/master/CHANGELOG.md"
 
 [project.entry-points.pytest11]
 pytest_qgis = "pytest_qgis"

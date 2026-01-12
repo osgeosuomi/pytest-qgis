@@ -2,11 +2,11 @@
 
 [![PyPI version](https://badge.fury.io/py/pytest-qgis.svg)](https://badge.fury.io/py/pytest-qgis)
 [![Downloads](https://img.shields.io/pypi/dm/pytest-qgis.svg)](https://pypistats.org/packages/pytest-qgis)
-![CI](https://github.com/GispoCoding/pytest-qgis/workflows/CI/badge.svg)
-[![Code on Github](https://img.shields.io/badge/Code-GitHub-brightgreen)](https://github.com/GispoCoding/pytest-qgis)
+![CI](https://github.com/osgeosuomi/pytest-qgis/workflows/CI/badge.svg)
+[![Code on Github](https://img.shields.io/badge/Code-GitHub-brightgreen)](https://github.com/osgeosuomi/pytest-qgis)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![codecov.io](https://codecov.io/github/GispoCoding/pytest-qgis/coverage.svg?branch=main)](https://codecov.io/github/GispoCoding/pytest-qgis?branch=main)
+[![codecov.io](https://codecov.io/github/osgeosuomi/pytest-qgis/coverage.svg?branch=main)](https://codecov.io/github/osgeosuomi/pytest-qgis?branch=main)
 
 A [pytest](https://docs.pytest.org) plugin for testing QGIS python plugins.
 
@@ -54,7 +54,7 @@ markers can be used.
   configure [`QgsApplication`](https://qgis.org/pyqgis/master/core/QgsApplication.html). With QGIS >= 3.18 it is also
   used to patch `qgis.utils.iface` with `qgis_iface` automatically.
 
-  > Be careful not to import modules importing `qgis.utils.iface` in the root of conftest, because the `pytest_configure` hook has not yet patched `iface` in that point. See [this issue](https://github.com/GispoCoding/pytest-qgis/issues/35) for details.
+  > Be careful not to import modules importing `qgis.utils.iface` in the root of conftest, because the `pytest_configure` hook has not yet patched `iface` in that point. See [this issue](https://github.com/osgeosuomi/pytest-qgis/issues/35) for details.
 
 * `pytest_runtest_teardown` hook is used to ensure that all layer fixtures of any scope are cleaned properly without causing segmentation faults. The layer fixtures that are cleaned automatically must have some of the following keywords in their name: "layer", "lyr", "raster", "rast", "tif".
 
