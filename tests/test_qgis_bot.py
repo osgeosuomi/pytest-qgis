@@ -23,12 +23,13 @@ from qgis.core import QgsFieldConstraints, QgsGeometry
 from qgis.gui import QgsAttributeDialog
 
 if TYPE_CHECKING:
-    from pytest_qgis.qgis_bot import QgisBot
     from qgis.core import QgsVectorLayer
     from qgis.gui import QgisInterface
 
+    from pytest_qgis.qgis_bot import QgisBot
 
-@pytest.fixture()
+
+@pytest.fixture
 def layer_with_soft_constraint(layer_points: "QgsVectorLayer") -> "QgsVectorLayer":
     """setup the layer"""
     # Set not-null constraint with SOFT strength
@@ -45,7 +46,7 @@ def layer_with_soft_constraint(layer_points: "QgsVectorLayer") -> "QgsVectorLaye
     return layer_points
 
 
-@pytest.fixture()
+@pytest.fixture
 def layer_with_hard_constraint(layer_points: "QgsVectorLayer") -> "QgsVectorLayer":
     """setup the layer"""
     # Set not-null constraint with SOFT strength

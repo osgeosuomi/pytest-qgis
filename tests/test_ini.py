@@ -59,7 +59,7 @@ def test_ini_gui(gui_enabled: bool, testdir: "Testdir"):
 
         def test_offscreen(qgis_new_project):
             assert (os.environ.get("QT_QPA_PLATFORM", "") ==
-            "{'offscreen' if not gui_enabled else ''}")
+            "{"offscreen" if not gui_enabled else ""}")
     """
     )
     result = testdir.runpytest("--qgis_disable_init")

@@ -36,7 +36,7 @@ QGIS_3_18 = 31800
 __iface = None
 
 
-@pytest.fixture()
+@pytest.fixture
 def replace_iface_with_qgis_iface(qgis_iface):
     global __iface  # noqa: PLW0603
     __iface = qgis_iface
@@ -73,7 +73,7 @@ def test_processing_providers(qgis_app, qgis_processing):
 
 
 def test_processing_run(qgis_processing):
-    from qgis import processing
+    from qgis import processing  # noqa: PLC0415
 
     # Use any algo that is available on all test platforms
     result = processing.run(

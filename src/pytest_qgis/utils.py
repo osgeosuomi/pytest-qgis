@@ -113,7 +113,7 @@ def replace_layers_with_reprojected_clones(
     For some reason all layers having differing crs from the project are invisible.
     Hotfix is to replace those by reprojected layers with map crs.
     """
-    import processing
+    import processing  # noqa: PLC0415
 
     vector_layers = [
         layer
@@ -165,7 +165,7 @@ def copy_layer_style_and_position(
     Copy layer style and position to another layer.
     """
     style_file = str(Path(tmp_path, f"{layer1.id()}.qml"))
-    msg, succeeded = layer1.saveNamedStyle(style_file)
+    _, succeeded = layer1.saveNamedStyle(style_file)
     if succeeded:
         layer2.loadNamedStyle(style_file)
     layer2.setMetadata(layer1.metadata())

@@ -199,7 +199,7 @@ def qgis_processing(qgis_app: QgsApplication) -> None:
     _initialize_processing(qgis_app)
 
 
-@pytest.fixture()
+@pytest.fixture
 def qgis_new_project(qgis_iface: QgisInterface) -> None:
     """
     Initializes new QGIS project by removing layers and relations etc.
@@ -207,7 +207,7 @@ def qgis_new_project(qgis_iface: QgisInterface) -> None:
     qgis_iface.newProject()
 
 
-@pytest.fixture()
+@pytest.fixture
 def qgis_world_map_geopackage(tmp_path: Path) -> Path:
     """
     Path to natural world map geopackage containing Natural Earth data.
@@ -221,7 +221,7 @@ def qgis_world_map_geopackage(tmp_path: Path) -> Path:
     return _get_world_map_geopackage(tmp_path)
 
 
-@pytest.fixture()
+@pytest.fixture
 def qgis_countries_layer(qgis_world_map_geopackage: Path) -> QgsVectorLayer:
     """
     Natural Earth countries as a QgsVectorLayer.
@@ -300,7 +300,9 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
     # https://github.com/qgis/QGIS/issues/40564
 
     if _QGIS_VERSION >= QGIS_3_18:
-        from qgis.utils import iface  # noqa: F401 # This import is required
+        from qgis.utils import (  # noqa: PLC0415
+            iface,  # noqa: F401 # This import is required
+        )
 
         mock.patch("qgis.utils.iface", _IFACE).start()
 
@@ -319,7 +321,7 @@ def _initialize_processing(qgis_app: QgsApplication) -> None:
     python_plugins_path = os.path.join(qgis_app.pkgDataPath(), "python", "plugins")
     if python_plugins_path not in sys.path:
         sys.path.append(python_plugins_path)
-    from processing.core.Processing import Processing
+    from processing.core.Processing import Processing  # noqa: PLC0415
 
     Processing.initialize()
 
