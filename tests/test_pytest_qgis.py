@@ -62,8 +62,10 @@ def test_qgis_new_project(qgis_new_project):
 
 
 def test_msg_bar(qgis_iface):
-    qgis_iface.messageBar().pushMessage("title", "text", Qgis.Info, 6)
-    assert qgis_iface.messageBar().messages.get(Qgis.Info) == ["title:text"]
+    qgis_iface.messageBar().pushMessage("title", "text", Qgis.MessageLevel.Info, 6)
+    assert qgis_iface.messageBar().messages.get(Qgis.MessageLevel.Info) == [
+        "title:text"
+    ]
 
 
 def test_processing_providers(qgis_app, qgis_processing):

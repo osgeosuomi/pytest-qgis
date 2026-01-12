@@ -29,10 +29,10 @@ class MockMessageBar(QObject):
     def __init__(self) -> None:
         super().__init__()
         self.messages: Dict[int, List[str]] = {
-            Qgis.Info: [],
-            Qgis.Warning: [],
-            Qgis.Critical: [],
-            Qgis.Success: [],
+            Qgis.MessageLevel.Info: [],
+            Qgis.MessageLevel.Warning: [],
+            Qgis.MessageLevel.Critical: [],
+            Qgis.MessageLevel.Success: [],
         }
 
     def get_messages(self, level: int) -> List[str]:

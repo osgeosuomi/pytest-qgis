@@ -1,5 +1,9 @@
 # Unreleased
 
+## Maintenance tasks
+
+* [#71](https://github.com/osgeosuomi/pytest-qgis/pull/71) Add Qt6 and QGIS>=4 support for the plugin
+
 # Version 2.1.0 (14-06-2024)
 
 ## New Features
