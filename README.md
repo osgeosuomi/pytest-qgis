@@ -141,8 +141,8 @@ $ pre-commit install
 
 ### Updating dependencies
 
-1. `pip-compile --upgrade`
-2. `pip-compile --upgrade requirements-dev.in`
+1. `uv pip compile --universal pyproject.toml -o requirements.txt --upgrade`
+2. `uv pip compile --universal -o requirements-dev.txt --group development --upgrade`
 
 ## Contributing
 
