@@ -48,6 +48,23 @@ changelog = "https://github.com/osgeosuomi/pytest-qgis/blob/master/CHANGELOG.md"
 [project.entry-points.pytest11]
 pytest_qgis = "pytest_qgis"
 
+[dependency-groups]
+development = [
+    "pytest",
+    "pytest-cov",
+    "pytest-qt",
+
+    # Linting
+    "flake8",
+    "flake8-pyproject",
+    "flake8-qgis",
+    "mypy",
+    "pre-commit",
+    "ruff",
+]
+
+[tool.uv]
+default-groups = ["development"]
 
 [tool]
 

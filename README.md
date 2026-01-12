@@ -123,16 +123,18 @@ pip install pytest-qgis
 
 ## Development environment
 
+This project uses [uv](https://docs.astral.sh/uv/getting-started/installation/)
+to manage python packages. Make sure to have it installed first.
+
+- Create a venv that is aware of system QGIS libraries: `uv venv --system-site-packages`
+    - On Windows OSGeo4W v2 installs use `<osgeo>/apps/PythonXX/python.exe`
+      with [necessary patches](https://trac.osgeo.org/osgeo4w/ticket/692)
+
 ```shell
-# Create a virtual environment with qgis and dependencies available
-$ python -m venv .venv --system-site-packages
 # Activate the virtual environment
 $ source .venv/bin/activate
-# Update pip and setuptools
-$ python -m pip install -U pip setuptools
-$ pip install pip-tools
 # Install dependencies
-$ pip-sync requirements.txt requirements-dev.txt
+$ uv sync
 # Install pre-commit hooks
 $ pre-commit install
 ```

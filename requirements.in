@@ -1,2 +1,0 @@
-# Pinned versions of the dependencies to support as many environments as possible
-pytest==6.*
