@@ -133,7 +133,8 @@ class QgisBot:
         dialog.show()
         dialog.setMode(QgsAttributeEditorContext.AddFeatureMode)
 
-        utils.wait(show_dialog_timeout_milliseconds)
+        # Process events to ensure all the signals are processed
+        utils.wait(max(show_dialog_timeout_milliseconds, 1))
 
         # Two accepts to ignore warnings and errors
         dialog.accept()
