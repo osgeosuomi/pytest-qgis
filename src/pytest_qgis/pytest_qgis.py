@@ -1,4 +1,4 @@
-#  Copyright (C) 2021-2023 pytest-qgis Contributors.
+#  Copyright (C) 2021-2026 pytest-qgis Contributors.
 #
 #
 #  This file is part of pytest-qgis.
@@ -163,7 +163,7 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
             _CANVAS.deleteLater()
         _APP.exitQgis()
         if _QGIS_CONFIG_PATH and _QGIS_CONFIG_PATH.exists():
-            # TODO: https://github.com/GispoCoding/pytest-qgis/issues/43
+            # TODO: https://github.com/osgeosuomi/pytest-qgis/issues/43
             with contextlib.suppress(PermissionError):
                 shutil.rmtree(_QGIS_CONFIG_PATH)
 
