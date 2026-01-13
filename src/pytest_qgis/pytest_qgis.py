@@ -200,9 +200,11 @@ def qgis_processing(qgis_app: QgsApplication) -> None:
 
 
 @pytest.fixture
-def qgis_new_project(qgis_iface: QgisInterface) -> None:
+def qgis_new_project(qgis_iface: QgisInterface, request: "SubRequest") -> QgsProject:
     """
     Initializes new QGIS project by removing layers and relations etc.
+
+    :return: QgsProject instance
     """
     qgis_iface.newProject()
 
@@ -210,6 +212,7 @@ def qgis_new_project(qgis_iface: QgisInterface) -> None:
     show_map_marker = request.node.get_closest_marker(SHOW_MAP_MARKER)
     if not show_map_marker:
         QgsProject.instance().clear()
+    return QgsProject.instance()
 
 
 @pytest.fixture
