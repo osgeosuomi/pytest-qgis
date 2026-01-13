@@ -206,6 +206,11 @@ def qgis_new_project(qgis_iface: QgisInterface) -> None:
     """
     qgis_iface.newProject()
 
+    # Clear the project properly if qgis_show_map marker is not used
+    show_map_marker = request.node.get_closest_marker(SHOW_MAP_MARKER)
+    if not show_map_marker:
+        QgsProject.instance().clear()
+
 
 @pytest.fixture
 def qgis_world_map_geopackage(tmp_path: Path) -> Path:
