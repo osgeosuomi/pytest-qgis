@@ -133,7 +133,8 @@ class QgisInterface(QObject):
         relation_manager: QgsRelationManager = instance.relationManager()
         for relation in relation_manager.relations():
             relation_manager.removeRelation(relation)
-        self._layers = []
+        self._layers.clear()
+        self._messageBar.clear_messages()
         self.newProjectCreated.emit()
 
     # ---------------- API Mock for QgsInterface follows -------------------
