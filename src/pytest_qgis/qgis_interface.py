@@ -25,12 +25,14 @@ __copyright__ = (
 )
 
 import logging
-from typing import Dict, List, Optional, Union
+import typing
+from typing import Optional, Union
 
 from qgis.core import (
     QgsLayerTree,
     QgsMapLayer,
     QgsProject,
+    QgsRasterLayer,
     QgsRelationManager,
     QgsVectorLayer,
 )
@@ -84,17 +86,17 @@ class QgisInterface(QObject):
 
         # For processing module
         self.destCrs = None
-        self._layers: List[QgsMapLayer] = []
+        self._layers: list[QgsMapLayer] = []
 
         # Add the MenuBar
         menu_bar = QMenuBar()
         self._mainWindow.setMenuBar(menu_bar)
 
         # Add the toolbar list
-        self._toolbars: Dict[str, QToolBar] = {}
+        self._toolbars: dict[str, QToolBar] = {}
 
     @pyqtSlot("QList<QgsMapLayer*>")
-    def addLayers(self, layers: List[QgsMapLayer]) -> None:
+    def addLayers(self, layers: list[QgsMapLayer]) -> None:
         """Handle layers being added to the registry so they show up in canvas.
 
         :param layers: list<QgsMapLayer> list of map layers that were added
@@ -123,7 +125,7 @@ class QgisInterface(QObject):
             self.canvas.setLayers([])
         self._layers = []
 
-    def newProject(self) -> None:
+    def newProject(self, promptToSaveFlag: bool = False) -> bool:  # noqa: ARG002
         """Create new project."""
         # noinspection PyArgumentList
         instance = QgsProject.instance()
@@ -136,6 +138,7 @@ class QgisInterface(QObject):
         self._layers.clear()
         self._messageBar.clear_messages()
         self.newProjectCreated.emit()
+        return True
 
     # ---------------- API Mock for QgsInterface follows -------------------
 
@@ -169,15 +172,24 @@ class QgisInterface(QObject):
         self.addLayers([layer])
         return layer
 
-    def addRasterLayer(self, path: str, base_name: str) -> None:
-        """Add a raster layer given a raster layer file name
+    @typing.overload
+    def addRasterLayer(
+        self, rasterLayerPath: Optional[str], baseName: Optional[str] = None
+    ) -> Optional[QgsRasterLayer]:
+        pass
 
-        :param path: Path to layer.
-        :type path: str
+    @typing.overload
+    def addRasterLayer(
+        self, url: Optional[str], layerName: Optional[str], providerKey: Optional[str]
+    ) -> Optional[QgsRasterLayer]:
+        pass
 
-        :param base_name: Base name for layer.
-        :type base_name: str
-        """
+    def addRasterLayer(
+        self, *args: str, **kwargs: dict[str, str]
+    ) -> Optional[QgsRasterLayer]:
+        layer = QgsRasterLayer(*args, **kwargs)
+        self.addLayers([layer])
+        return layer
 
     def activeLayer(self) -> Optional[QgsMapLayer]:
         """Get pointer to the active layer (layer selected in the legend)."""
@@ -254,7 +266,7 @@ class QgisInterface(QObject):
         """Get the messagebar"""
         return self._messageBar
 
-    def getMockLayers(self) -> List[QgsMapLayer]:
+    def getMockLayers(self) -> list[QgsMapLayer]:
         return self._layers
 
     def setActiveLayer(self, layer: QgsMapLayer) -> None:
