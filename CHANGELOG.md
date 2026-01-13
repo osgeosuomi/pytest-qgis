@@ -2,7 +2,8 @@
 
 ## Fixes
 
-* [#74](https://github.com/GispoCoding/pytest-qgis/pull/74) Process events before creating new feature with QgisBot.create_feature_with_attribute_dialog
+* [#74](https://github.com/osgeosuomi/pytest-qgis/pull/74) Process events before creating new feature with QgisBot.create_feature_with_attribute_dialog
+* [#76](https://github.com/osgeosuomi/pytest-qgis/pull/76) Improve stub classes QgisInterface and QgsMessageBar
 
 # Version 2.1.0 (14-06-2024)
 

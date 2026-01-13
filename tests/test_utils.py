@@ -70,7 +70,7 @@ def test_set_map_crs_based_on_layers_should_set_3067(layers_added):
 
 
 def test_get_layers_with_different_crs(
-    crs, layers_added, layer_polygon_3067, raster_3067
+    layers_added, crs, layer_polygon_3067, raster_3067
 ):
     assert set(get_layers_with_different_crs()) == {layer_polygon_3067, raster_3067}
 
@@ -80,7 +80,7 @@ def test_get_layers_with_different_crs(
     reason="QGIS 3.10 test image cannot find correct algorithms",
 )
 def test_replace_layers_with_reprojected_clones(  # noqa: PLR0913
-    crs, layers_added, qgis_processing, layer_polygon_3067, raster_3067, tmp_path
+    layers_added, crs, qgis_processing, layer_polygon_3067, raster_3067, tmp_path
 ):
     vector_layer_id = layer_polygon_3067.id()
     raster_layer_id = raster_3067.id()

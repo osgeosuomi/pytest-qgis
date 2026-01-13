@@ -21,16 +21,19 @@ __copyright__ = (
     "Copyright (c) 2010 by Ivan Mincik, ivan.mincik@gista.sk and "
     "Copyright (c) 2011 German Carrillo, geotux_tuxman@linuxmail.org"
     "Copyright (c) 2014 Tim Sutton, tim@linfiniti.com"
-    "Copyright (c) 2021-2023 pytest-qgis Contributors"
+    "Copyright (c) 2021-2026 pytest-qgis Contributors"
 )
 
 import logging
-from typing import Dict, List, Optional, Union
+import typing
+from typing import Optional, Union
+from unittest.mock import MagicMock
 
 from qgis.core import (
     QgsLayerTree,
     QgsMapLayer,
     QgsProject,
+    QgsRasterLayer,
     QgsRelationManager,
     QgsVectorLayer,
 )
@@ -84,17 +87,28 @@ class QgisInterface(QObject):
 
         # For processing module
         self.destCrs = None
-        self._layers: List[QgsMapLayer] = []
+        self._layers: list[QgsMapLayer] = []
 
         # Add the MenuBar
         menu_bar = QMenuBar()
         self._mainWindow.setMenuBar(menu_bar)
 
         # Add the toolbar list
-        self._toolbars: Dict[str, QToolBar] = {}
+        self._toolbars: dict[str, QToolBar] = {}
+
+        # Store mocks for missing methods to ensure consistency
+        self._mock_methods: dict[str, MagicMock] = {}
+
+    def __getattr__(self, name: str) -> MagicMock:
+        """
+        Return a MagicMock for any method not explicitly implemented.
+        """
+        if name not in self._mock_methods:
+            self._mock_methods[name] = MagicMock(name=name)
+        return self._mock_methods[name]
 
     @pyqtSlot("QList<QgsMapLayer*>")
-    def addLayers(self, layers: List[QgsMapLayer]) -> None:
+    def addLayers(self, layers: list[QgsMapLayer]) -> None:
         """Handle layers being added to the registry so they show up in canvas.
 
         :param layers: list<QgsMapLayer> list of map layers that were added
@@ -123,7 +137,7 @@ class QgisInterface(QObject):
             self.canvas.setLayers([])
         self._layers = []
 
-    def newProject(self) -> None:
+    def newProject(self, promptToSaveFlag: bool = False) -> bool:  # noqa: ARG002
         """Create new project."""
         # noinspection PyArgumentList
         instance = QgsProject.instance()
@@ -133,8 +147,11 @@ class QgisInterface(QObject):
         relation_manager: QgsRelationManager = instance.relationManager()
         for relation in relation_manager.relations():
             relation_manager.removeRelation(relation)
-        self._layers = []
+        self._layers.clear()
+        self._mock_methods.clear()
+        self._messageBar.clear_messages()
         self.newProjectCreated.emit()
+        return True
 
     # ---------------- API Mock for QgsInterface follows -------------------
 
@@ -168,15 +185,24 @@ class QgisInterface(QObject):
         self.addLayers([layer])
         return layer
 
-    def addRasterLayer(self, path: str, base_name: str) -> None:
-        """Add a raster layer given a raster layer file name
+    @typing.overload
+    def addRasterLayer(
+        self, rasterLayerPath: Optional[str], baseName: Optional[str] = None
+    ) -> Optional[QgsRasterLayer]:
+        pass
 
-        :param path: Path to layer.
-        :type path: str
+    @typing.overload
+    def addRasterLayer(
+        self, url: Optional[str], layerName: Optional[str], providerKey: Optional[str]
+    ) -> Optional[QgsRasterLayer]:
+        pass
 
-        :param base_name: Base name for layer.
-        :type base_name: str
-        """
+    def addRasterLayer(
+        self, *args: str, **kwargs: dict[str, str]
+    ) -> Optional[QgsRasterLayer]:
+        layer = QgsRasterLayer(*args, **kwargs)
+        self.addLayers([layer])
+        return layer
 
     def activeLayer(self) -> Optional[QgsMapLayer]:
         """Get pointer to the active layer (layer selected in the legend)."""
@@ -253,7 +279,7 @@ class QgisInterface(QObject):
         """Get the messagebar"""
         return self._messageBar
 
-    def getMockLayers(self) -> List[QgsMapLayer]:
+    def getMockLayers(self) -> list[QgsMapLayer]:
         return self._layers
 
     def setActiveLayer(self, layer: QgsMapLayer) -> None:

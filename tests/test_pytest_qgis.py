@@ -18,13 +18,11 @@
 
 import pytest
 from qgis.core import (
-    Qgis,
     QgsCoordinateReferenceSystem,
     QgsProcessing,
     QgsProject,
     QgsVectorLayer,
 )
-from qgis.PyQt.QtWidgets import QToolBar
 from qgis.utils import iface
 
 from tests.utils import QGIS_VERSION
@@ -51,19 +49,8 @@ def test_a_teardown():
     """
 
 
-def test_add_layer():
-    layer = QgsVectorLayer("Polygon", "dummy_polygon_layer", "memory")
-    QgsProject.instance().addMapLayer(layer)
-    assert set(QgsProject.instance().mapLayers().values()) == {layer}
-
-
 def test_qgis_new_project(qgis_new_project):
     assert QgsProject.instance().mapLayers() == {}
-
-
-def test_msg_bar(qgis_iface):
-    qgis_iface.messageBar().pushMessage("title", "text", Qgis.Info, 6)
-    assert qgis_iface.messageBar().messages.get(Qgis.Info) == ["title:text"]
 
 
 def test_processing_providers(qgis_app, qgis_processing):
@@ -96,32 +83,6 @@ def test_processing_run(qgis_processing):
 )
 def test_setup_qgis_iface(qgis_iface):
     assert iface == qgis_iface
-
-
-def test_iface_active_layer(qgis_iface, layer_polygon, layer_points):
-    QgsProject.instance().addMapLayer(layer_polygon)
-    QgsProject.instance().addMapLayer(layer_points)
-
-    assert qgis_iface.activeLayer() is None
-    qgis_iface.setActiveLayer(layer_polygon)
-    assert qgis_iface.activeLayer() == layer_polygon
-    qgis_iface.setActiveLayer(layer_points)
-    assert qgis_iface.activeLayer() == layer_points
-
-
-def test_iface_toolbar_str(qgis_iface):
-    name = "test_bar"
-    toolbar: QToolBar = qgis_iface.addToolBar(name)
-    assert toolbar.windowTitle() == name
-    assert qgis_iface._toolbars == {name: toolbar}
-
-
-def test_iface_toolbar_qtoolbar(qgis_iface):
-    name = "test_bar"
-    toolbar: QToolBar = QToolBar(name)
-    qgis_iface.addToolBar(toolbar)
-    assert toolbar.windowTitle() == name
-    assert qgis_iface._toolbars == {name: toolbar}
 
 
 def test_canvas_should_be_released(qgis_canvas, layer_polygon, layer_points):

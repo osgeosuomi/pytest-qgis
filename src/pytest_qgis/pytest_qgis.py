@@ -158,7 +158,10 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
 
     if not request.config._plugin_settings.qgis_init_disabled:
         assert _APP
-        QgsProject.instance().legendLayersAdded.disconnect(_APP.processEvents)
+
+        # TODO: investigate why legendLayersAdded is sometimes not connected
+        with contextlib.suppress(TypeError):
+            QgsProject.instance().legendLayersAdded.disconnect(_APP.processEvents)
         if not sip.isdeleted(_CANVAS) and _CANVAS is not None:
             _CANVAS.deleteLater()
         _APP.exitQgis()
@@ -200,11 +203,19 @@ def qgis_processing(qgis_app: QgsApplication) -> None:
 
 
 @pytest.fixture
-def qgis_new_project(qgis_iface: QgisInterface) -> None:
+def qgis_new_project(qgis_iface: QgisInterface, request: "SubRequest") -> QgsProject:
     """
     Initializes new QGIS project by removing layers and relations etc.
+
+    :return: QgsProject instance
     """
     qgis_iface.newProject()
+
+    # Clear the project properly if qgis_show_map marker is not used
+    show_map_marker = request.node.get_closest_marker(SHOW_MAP_MARKER)
+    if not show_map_marker:
+        QgsProject.instance().clear()
+    return QgsProject.instance()
 
 
 @pytest.fixture
