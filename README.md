@@ -24,7 +24,7 @@ This plugin makes it easier to write QGIS plugin tests with the help of some fix
 * `qgis_parent` returns the QWidget used as parent of the `qgis_canvas`
 * `qgis_iface` returns stubbed [`QgsInterface`](https://qgis.org/pyqgis/master/gui/QgisInterface.html). All the methods that are not implemented return a MagickMock that can be used for testing the calls.
 * `qgis_new_project` makes sure that all the map layers and configurations are removed. This should be used with tests
-  that add stuff to [`QgsProject`](https://qgis.org/pyqgis/master/core/QgsProject.html).
+  that add stuff to [`QgsProject`](https://qgis.org/pyqgis/master/core/QgsProject.html). Fixture returns the `QgsProject` instance.
 * `qgis_processing` initializes the processing framework. This can be used when testing code that
   calls `processing.run(...)`.
 * `qgis_version` returns QGIS version number as integer.

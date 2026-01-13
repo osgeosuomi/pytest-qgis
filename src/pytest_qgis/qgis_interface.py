@@ -21,7 +21,7 @@ __copyright__ = (
     "Copyright (c) 2010 by Ivan Mincik, ivan.mincik@gista.sk and "
     "Copyright (c) 2011 German Carrillo, geotux_tuxman@linuxmail.org"
     "Copyright (c) 2014 Tim Sutton, tim@linfiniti.com"
-    "Copyright (c) 2021-2023 pytest-qgis Contributors"
+    "Copyright (c) 2021-2026 pytest-qgis Contributors"
 )
 
 import logging
