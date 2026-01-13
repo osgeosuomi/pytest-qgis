@@ -158,7 +158,10 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
 
     if not request.config._plugin_settings.qgis_init_disabled:
         assert _APP
-        QgsProject.instance().legendLayersAdded.disconnect(_APP.processEvents)
+
+        # TODO: investigate why legendLayersAdded is sometimes not connected
+        with contextlib.suppress(TypeError):
+            QgsProject.instance().legendLayersAdded.disconnect(_APP.processEvents)
         if not sip.isdeleted(_CANVAS) and _CANVAS is not None:
             _CANVAS.deleteLater()
         _APP.exitQgis()
