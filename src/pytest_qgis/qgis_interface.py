@@ -27,6 +27,7 @@ __copyright__ = (
 import logging
 import typing
 from typing import Optional, Union
+from unittest.mock import MagicMock
 
 from qgis.core import (
     QgsLayerTree,
@@ -95,6 +96,17 @@ class QgisInterface(QObject):
         # Add the toolbar list
         self._toolbars: dict[str, QToolBar] = {}
 
+        # Store mocks for missing methods to ensure consistency
+        self._mock_methods: dict[str, MagicMock] = {}
+
+    def __getattr__(self, name: str) -> MagicMock:
+        """
+        Return a MagicMock for any method not explicitly implemented.
+        """
+        if name not in self._mock_methods:
+            self._mock_methods[name] = MagicMock(name=name)
+        return self._mock_methods[name]
+
     @pyqtSlot("QList<QgsMapLayer*>")
     def addLayers(self, layers: list[QgsMapLayer]) -> None:
         """Handle layers being added to the registry so they show up in canvas.
@@ -136,6 +148,7 @@ class QgisInterface(QObject):
         for relation in relation_manager.relations():
             relation_manager.removeRelation(relation)
         self._layers.clear()
+        self._mock_methods.clear()
         self._messageBar.clear_messages()
         self.newProjectCreated.emit()
         return True

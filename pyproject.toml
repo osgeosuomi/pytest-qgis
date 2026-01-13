@@ -101,7 +101,7 @@ indent-width = 4
 
 target-version = "py37"
 
-external = ["QGS"]
+lint.external = ["QGS"]
 
 lint.select = [
     "ANN", # flake8-annotations
@@ -133,10 +133,10 @@ lint.unfixable = [
     "F841", # Unused variables
 ]
 
-[tool.ruff.flake8-tidy-imports]
+[tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "src/pytest_qgis/pytest_qgis.py"=["PLR2004"]  # TODO: Fix magic values. Remove this after.
 "src/pytest_qgis/qgis_interface.py" = ["N802", "N803"]
 "src/pytest_qgis/utils.py" = ["ANN401"]
@@ -144,4 +144,5 @@ ban-relative-imports = "all"
     "ANN001",
     "ANN201",
     "ARG001", # TODO: Unused function argument. These are mostly pytest fixtures. Find a way to allow these in tests. Remove this after.
+    "PLR2004"
 ]

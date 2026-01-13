@@ -18,6 +18,7 @@
 
 from pathlib import Path
 from typing import TYPE_CHECKING
+from unittest.mock import MagicMock
 
 import pytest
 from qgis.core import (
@@ -88,3 +89,21 @@ def test_iface_toolbar_qtoolbar(qgis_iface: "QgisInterface"):
     qgis_iface.addToolBar(toolbar)
     assert toolbar.windowTitle() == name
     assert qgis_iface._toolbars == {name: toolbar}
+
+
+def test_iface_mocks_missing_methods(qgis_iface: "QgisInterface"):
+    mock_method = qgis_iface.pluginManagerInterface()
+    assert isinstance(mock_method, MagicMock)
+    qgis_iface.pluginManagerInterface.assert_called_once()
+
+    qgis_iface.pluginManagerInterface()
+    assert qgis_iface.pluginManagerInterface.call_count == 2
+
+
+def test_new_project_clears_mocks(qgis_iface: "QgisInterface"):
+    qgis_iface.pluginManagerInterface()
+    qgis_iface.pluginManagerInterface()
+    assert qgis_iface.pluginManagerInterface.call_count == 2
+
+    qgis_iface.newProject()
+    assert qgis_iface.pluginManagerInterface.call_count == 0
