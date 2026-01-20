@@ -33,7 +33,7 @@ from qgis.core import Qgis, QgsApplication, QgsProject, QgsRectangle, QgsVectorL
 from qgis.gui import QgisInterface as QgisInterfaceOrig
 from qgis.gui import QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapCanvas
 from qgis.PyQt import QtCore, QtWidgets, sip
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication, Qt
 from qgis.PyQt.QtWidgets import QMainWindow, QMessageBox, QWidget
 
 from pytest_qgis.mock_qgis_classes import MockMessageBar
@@ -54,7 +54,13 @@ if TYPE_CHECKING:
     from _pytest.mark import Mark
 
 Settings = namedtuple(
-    "Settings", ["gui_enabled", "qgis_init_disabled", "canvas_width", "canvas_height"]
+    "Settings", [
+        "gui_enabled", 
+        "qgis_init_disabled",
+        "qgis_server",
+        "canvas_width",
+        "canvas_height",
+    ]
 )
 ShowMapSettings = namedtuple(
     "ShowMapSettings", ["timeout", "add_basemap", "zoom_to_common_extent", "extent"]
@@ -64,6 +70,9 @@ GUI_DISABLE_KEY = "qgis_disable_gui"
 GUI_ENABLED_KEY = "qgis_gui_enabled"
 GUI_DESCRIPTION = "Set whether the graphical user interface is wanted or not."
 GUI_ENABLED_DEFAULT = True
+
+SERVER_KEY = "qgis_server"
+SERVER_DEFAULT = False
 
 CANVAS_HEIGHT_KEY = "qgis_canvas_height"
 CANVAS_WIDTH_KEY = "qgis_canvas_width"
@@ -92,6 +101,8 @@ _PARENT: QtWidgets.QWidget | None = None
 _AUTOUSE_QGIS: bool | None = None
 _QGIS_CONFIG_PATH: Path | None = None
 
+_QGIS_SERVER: bool = False
+
 try:
     _QGIS_VERSION = Qgis.versionInt()
 except AttributeError:
@@ -113,6 +124,13 @@ def pytest_addoption(parser: "Parser") -> None:
 
     parser.addini(
         GUI_ENABLED_KEY, GUI_DESCRIPTION, type="bool", default=GUI_ENABLED_DEFAULT
+    )
+
+    parser.addini(
+        SERVER_KEY, 
+        "QGIS Server session", 
+        type="bool", 
+        default=SERVER_DEFAULT,
     )
 
     parser.addini(
@@ -157,11 +175,13 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
     if not request.config._plugin_settings.qgis_init_disabled:
         assert _APP
 
-        # TODO: investigate why legendLayersAdded is sometimes not connected
-        with contextlib.suppress(TypeError):
-            QgsProject.instance().legendLayersAdded.disconnect(_APP.processEvents)
-        if not sip.isdeleted(_CANVAS) and _CANVAS is not None:
-            _CANVAS.deleteLater()
+        if not request.config._plugin_settings.qgis_server:
+            # TODO: investigate why legendLayersAdded is sometimes not connected
+            with contextlib.suppress(TypeError):
+                QgsProject.instance().legendLayersAdded.disconnect(_APP.processEvents)
+            if not sip.isdeleted(_CANVAS) and _CANVAS is not None:
+                _CANVAS.deleteLater()
+
         # NOTE: this cause a core dump with qgis/qgis image
         #_APP.exitQgis()
         if _QGIS_CONFIG_PATH and _QGIS_CONFIG_PATH.exists():
@@ -188,7 +208,10 @@ def qgis_version() -> int:
 
 
 @pytest.fixture(scope="session")
-def qgis_iface() -> QgisInterfaceOrig:
+def qgis_iface() -> Optional[QgisInterfaceOrig]:
+    if _QGIS_SERVER:
+        return None
+
     assert _IFACE
     return _IFACE
 
@@ -250,14 +273,19 @@ def qgis_bot(qgis_iface: QgisInterface) -> QgisBot:
 @pytest.fixture(autouse=True)
 def qgis_show_map(
     qgis_app: QgsApplication,
-    qgis_iface: QgisInterface,
-    qgis_parent: QWidget,
+    qgis_iface: Optional[QgisInterface],
+    qgis_parent: Optional[QWidget],
     tmp_path: Path,
     request: "SubRequest",
 ) -> None:
     """
     Shows QGIS map if qgis_show_map marker is used.
     """
+    # Noop if server session
+    if _QGIS_SERVER:
+        yield
+        return
+
     show_map_marker = request.node.get_closest_marker(SHOW_MAP_MARKER)
     common_settings: Settings = request.config._plugin_settings
 
@@ -292,30 +320,46 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
     _QGIS_CONFIG_PATH = Path(tempfile.mkdtemp(prefix="pytest-qgis"))
     os.environ["QGIS_CUSTOM_CONFIG_PATH"] = str(_QGIS_CONFIG_PATH)
 
+    # From qgis server
+    # Will enable us to read qgis setting file
+    QCoreApplication.setOrganizationName(QgsApplication.QGIS_ORGANIZATION_NAME)
+    QCoreApplication.setOrganizationDomain(QgsApplication.QGIS_ORGANIZATION_DOMAIN)
+    QCoreApplication.setApplicationName(QgsApplication.QGIS_APPLICATION_NAME)
+
+    QCoreApplication.setAttribute(
+        Qt.ApplicationAttribute.AA_ShareOpenGLContexts, True,
+    )
+
+    platform = "server" if settings.qgis_server else None
+
     if not settings.qgis_init_disabled:
-        _APP = QgsApplication([], GUIenabled=settings.gui_enabled)
-        _APP.initQgis()
-        QgsGui.editorWidgetRegistry().initEditors()
-    _PARENT = QMainWindow()
-    _CANVAS = QgsMapCanvas(_PARENT)
-    _PARENT.resize(QtCore.QSize(settings.canvas_width, settings.canvas_height))
-    _CANVAS.resize(QtCore.QSize(settings.canvas_width, settings.canvas_height))
+        _APP = QgsApplication([], GUIenabled=settings.gui_enabled, platformName=platform)
+        if settings.qgis_server:
+            pass
+        else:
+            _APP.initQgis()
+            QgsGui.editorWidgetRegistry().initEditors()
 
-    # QgisInterface is a stub implementation of the QGIS plugin interface
-    _IFACE = QgisInterface(_CANVAS, MockMessageBar(), _PARENT)
+            _PARENT = QMainWindow()
+            _CANVAS = QgsMapCanvas(_PARENT)
+            _PARENT.resize(QtCore.QSize(settings.canvas_width, settings.canvas_height))
+            _CANVAS.resize(QtCore.QSize(settings.canvas_width, settings.canvas_height))
 
-    # Patching imported iface (evaluated as None in tests) with iface.
-    mock.patch("qgis.utils.iface", _IFACE).start()
+            # QgisInterface is a stub implementation of the QGIS plugin interface
+            _IFACE = QgisInterface(_CANVAS, MockMessageBar(), _PARENT)
 
-    if _APP is not None:
-        # QGIS zooms to the layer's extent if it
-        # is the first layer added to the map.
-        # If the qgis_show_map marker is used, this zooming might occur
-        # at some later time when events are processed (e.g. at qtbot.wait call)
-        # and this might change the extent unexpectedly.
-        # It is better to process events right after adding the
-        # layer to avoid these kind of problems.
-        QgsProject.instance().legendLayersAdded.connect(_APP.processEvents)
+            # Patching imported iface (evaluated as None in tests) with iface
+            mock.patch("qgis.utils.iface", _IFACE).start()
+
+            if _APP is not None:
+                # QGIS zooms to the layer's extent if it
+                # is the first layer added to the map.
+                # If the qgis_show_map marker is used, this zooming might occur
+                # at some later time when events are processed (e.g. at qtbot.wait call)
+                # and this might change the extent unexpectedly.
+                # It is better to process events right after adding the
+                # layer to avoid these kind of problems.
+                QgsProject.instance().legendLayersAdded.connect(_APP.processEvents)
 
 
 def _initialize_processing(qgis_app: QgsApplication) -> None:
@@ -408,17 +452,25 @@ def _configure_qgis_map(
 
 
 def _parse_settings(config: "Config") -> Settings:
-    gui_disabled = config.getoption(GUI_DISABLE_KEY)
-    if not gui_disabled:
-        gui_enabled = config.getini(GUI_ENABLED_KEY)
+    global _QGIS_SERVER
+
+    qgis_server = config.getini(SERVER_KEY)
+    if qgis_server:
+        gui_enabled = False
+        _QGIS_SERVER = True
     else:
-        gui_enabled = not gui_disabled
+        gui_disabled = config.getoption(GUI_DISABLE_KEY)
+        if not gui_disabled:
+            gui_enabled = config.getini(GUI_ENABLED_KEY)
+        else:
+            gui_enabled = not gui_disabled
 
     qgis_init_disabled = config.getoption(DISABLE_QGIS_INIT_KEY)
+
     canvas_width = int(config.getini(CANVAS_WIDTH_KEY))
     canvas_height = int(config.getini(CANVAS_HEIGHT_KEY))
 
-    return Settings(gui_enabled, qgis_init_disabled, canvas_width, canvas_height)
+    return Settings(gui_enabled, qgis_init_disabled, qgis_server, canvas_width, canvas_height)
 
 
 def _parse_show_map_marker(marker: "Mark") -> ShowMapSettings:  # noqa: C901, PLR0912 TODO: Fix complexity
