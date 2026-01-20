@@ -61,7 +61,7 @@ ShowMapSettings = namedtuple(
 )
 
 GUI_DISABLE_KEY = "qgis_disable_gui"
-GUI_ENABLED_KEY = "qgis_qui_enabled"
+GUI_ENABLED_KEY = "qgis_gui_enabled"
 GUI_DESCRIPTION = "Set whether the graphical user interface is wanted or not."
 GUI_ENABLED_DEFAULT = True
 
@@ -340,7 +340,7 @@ def _show_qgis_dlg(common_settings: Settings, qgis_parent: QWidget) -> None:
     if not common_settings.gui_enabled:
         warnings.warn(
             "QGIS map is not visible because the GUI is not enabled. "
-            "Set qgis_qui_enabled=True in pytest.ini to see the window.",
+            "Set qgis_gui_enabled=True in pytest.ini to see the window.",
             stacklevel=1,
         )
 
