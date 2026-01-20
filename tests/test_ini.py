@@ -49,7 +49,7 @@ def test_ini_gui(gui_enabled: bool, testdir: "Testdir"):
     testdir.makeini(
         f"""
         [pytest]
-        qgis_qui_enabled={gui_enabled}
+        qgis_gui_enabled={gui_enabled}
     """
     )
 

@@ -95,7 +95,7 @@ markers can be used.
 
 ### ini-options
 
-* `qgis_qui_enabled` whether the QUI will be visible or not. Defaults to `True`. Command line
+* `qgis_gui_enabled` whether the QUI will be visible or not. Defaults to `True`. Command line
   option `--qgis_disable_gui` will override this.
 * `qgis_canvas_width` width of the QGIS canvas in pixels. Defaults to 600.
 * `qgis_canvas_height` height of the QGIS canvas in pixels. Defaults to 600.
