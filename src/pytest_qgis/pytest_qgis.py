@@ -99,7 +99,6 @@ _CANVAS: QgsMapCanvas | None = None
 _IFACE: QgisInterface | None = None
 _PARENT: QtWidgets.QWidget | None = None
 _AUTOUSE_QGIS: bool | None = None
-_QGIS_CONFIG_PATH: Path | None = None
 
 _QGIS_SERVER: bool = False
 
@@ -184,10 +183,6 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
 
         # NOTE: this cause a core dump with qgis/qgis image
         #_APP.exitQgis()
-        if _QGIS_CONFIG_PATH and _QGIS_CONFIG_PATH.exists():
-            # TODO: https://github.com/osgeosuomi/pytest-qgis/issues/43
-            with contextlib.suppress(PermissionError):
-                shutil.rmtree(_QGIS_CONFIG_PATH)
 
 
 @pytest.fixture(scope="session")
@@ -312,13 +307,39 @@ def qgis_show_map(
         )
 
 
-def _start_and_configure_qgis_app(config: "Config") -> None:
-    global _APP, _CANVAS, _IFACE, _PARENT, _QGIS_CONFIG_PATH  # noqa: PLW0603
-    settings: Settings = config._plugin_settings
+def _load_qgis_settings(config: "Config") -> None:
+    from qgis.core import QgsSettings
+    from qgis.PyQt.QtCore import QSettings
 
-    # Use temporary path for QGIS config
-    _QGIS_CONFIG_PATH = Path(tempfile.mkdtemp(prefix="pytest-qgis"))
-    os.environ["QGIS_CUSTOM_CONFIG_PATH"] = str(_QGIS_CONFIG_PATH)
+    rootdir = config.rootpath
+    path = rootdir.joinpath(".qgis-settings")
+
+    os.environ["QGIS_CUSTOM_CONFIG_PATH"] = str(path)
+    os.environ["QGIS_OPTIONS_PATH"] = str(path)
+
+    settings_path = path.joinpath("profiles", "default")
+    # Copy the ini file at correct location
+    settings_file = settings_path.joinpath(
+        QgsApplication.QGIS_ORGANIZATION_NAME,
+        "QGIS3.ini",
+    )
+    settings_file.parent.mkdir(parents=True, exist_ok=True)
+
+    # Copy the ini file
+    settings = rootdir.joinpath("qgis_settings.ini")
+    if settings.exists():
+        shutil.copyfile(settings, settings_file)
+
+    QSettings.setDefaultFormat(QSettings.IniFormat)
+    QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, str(settings_path))
+
+    qgssettings = QgsSettings()
+    print("QGIS Settings loaded from ", qgssettings.fileName(), file=sys.stderr)
+
+
+def _start_and_configure_qgis_app(config: "Config") -> None:
+    global _APP, _CANVAS, _IFACE, _PARENT  # noqa: PLW0603
+    settings: Settings = config._plugin_settings
 
     # From qgis server
     # Will enable us to read qgis setting file
@@ -329,6 +350,8 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
     QCoreApplication.setAttribute(
         Qt.ApplicationAttribute.AA_ShareOpenGLContexts, True,
     )
+
+    _load_qgis_settings(config)
 
     platform = "server" if settings.qgis_server else None
 
@@ -351,15 +374,23 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
             # Patching imported iface (evaluated as None in tests) with iface
             mock.patch("qgis.utils.iface", _IFACE).start()
 
-            if _APP is not None:
-                # QGIS zooms to the layer's extent if it
-                # is the first layer added to the map.
-                # If the qgis_show_map marker is used, this zooming might occur
-                # at some later time when events are processed (e.g. at qtbot.wait call)
-                # and this might change the extent unexpectedly.
-                # It is better to process events right after adding the
-                # layer to avoid these kind of problems.
-                QgsProject.instance().legendLayersAdded.connect(_APP.processEvents)
+            # QGIS zooms to the layer's extent if it
+            # is the first layer added to the map.
+            # If the qgis_show_map marker is used, this zooming might occur
+            # at some later time when events are processed (e.g. at qtbot.wait call)
+            # and this might change the extent unexpectedly.
+            # It is better to process events right after adding the
+            # layer to avoid these kind of problems.
+            QgsProject.instance().legendLayersAdded.connect(_APP.processEvents)
+        
+        _init_qgis_plugins_path(_APP)
+
+
+def _init_qgis_plugins_path(qgis_app: QgsApplication) -> None:
+    # Give access to python QGIS plugins 
+    python_plugins_path = os.path.join(_APP.pkgDataPath(), "python", "plugins")
+    print("QGIS plugins path:", python_plugins_path, file=sys.stderr)
+    sys.path.append(python_plugins_path)
 
 
 def _initialize_processing(qgis_app: QgsApplication) -> None:
