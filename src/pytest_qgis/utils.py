@@ -18,9 +18,10 @@
 #
 import time
 from collections import Counter
+from collections.abc import Callable, Generator
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Generator, Optional
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
 
 from osgeo import gdal
@@ -48,7 +49,7 @@ DEFAULT_EPSG = "EPSG:4326"
 LAYER_KEYWORDS = ("layer", "lyr", "raster", "rast", "tif")
 
 
-def get_common_extent_from_all_layers() -> Optional[QgsRectangle]:
+def get_common_extent_from_all_layers() -> QgsRectangle | None:
     """Get common extent from all QGIS layers in the project."""
     map_crs = QgsProject.instance().crs()
     layers = list(QgsProject.instance().mapLayers(validOnly=True).values())

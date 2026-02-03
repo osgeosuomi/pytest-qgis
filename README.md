@@ -111,7 +111,7 @@ Class to hold common utility methods for interacting with QGIS. Check [test_qgis
 
 ## Requirements
 
-This pytest plugin requires QGIS >= 3.16 to work though it might work with older versions.
+This pytest plugin requires QGIS >= 3.34 to work though versions up until pytest-qgis<=2.1.0 should work with QGIS >= 3.16.
 
 ## Installation
 
