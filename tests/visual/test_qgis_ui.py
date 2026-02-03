@@ -26,9 +26,7 @@ TIMEOUT = 10 if IN_CI else 1000
 
 
 @pytest.mark.with_pytest_qt
-def test_attribute_dialog_change(
-    qgis_iface, qgis_canvas, layer_points, qgis_bot, qtbot
-):
+def test_attribute_dialog_change(qgis_iface, layer_points, qgis_bot, qtbot):
     # The essential thing is QgsGui.editorWidgetRegistry().initEditors()
     layer = layer_points
 

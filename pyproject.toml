@@ -134,12 +134,10 @@ lint.unfixable = [
 ban-relative-imports = "all"
 
 [tool.ruff.lint.per-file-ignores]
-"src/pytest_qgis/pytest_qgis.py"=["PLR2004"]  # TODO: Fix magic values. Remove this after.
 "src/pytest_qgis/qgis_interface.py" = ["N802", "N803"]
 "src/pytest_qgis/utils.py" = ["ANN401"]
 "tests/*" = [
     "ANN001",
     "ANN201",
-    "ARG001", # TODO: Unused function argument. These are mostly pytest fixtures. Find a way to allow these in tests. Remove this after.
     "PLR2004"
 ]

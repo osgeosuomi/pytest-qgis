@@ -45,17 +45,20 @@ def test_a_teardown():
     """
 
 
-def test_qgis_new_project(qgis_new_project):
+@pytest.mark.usefixtures("qgis_new_project")
+def test_qgis_new_project():
     assert QgsProject.instance().mapLayers() == {}
 
 
-def test_processing_providers(qgis_app, qgis_processing):
+@pytest.mark.usefixtures("qgis_processing")
+def test_processing_providers(qgis_app):
     assert "qgis" in [
         provider.id() for provider in qgis_app.processingRegistry().providers()
     ]
 
 
-def test_processing_run(qgis_processing):
+@pytest.mark.usefixtures("qgis_processing")
+def test_processing_run():
     from qgis import processing  # noqa: PLC0415
 
     # Use any algo that is available on all test platforms

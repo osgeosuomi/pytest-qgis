@@ -438,23 +438,23 @@ def _parse_show_map_marker(marker: "Mark") -> ShowMapSettings:  # noqa: C901, PL
         raise TypeError("Multiple values for timeout argument of qgis_show_map marker")
     elif len(marker.args) >= 1:
         timeout = marker.args[0]
-    if len(marker.args) >= 2 and add_basemap is not notset:
+    if len(marker.args) >= 2 and add_basemap is not notset:  # noqa: PLR2004
         raise TypeError(
             "Multiple values for add_basemap argument of qgis_show_map marker"
         )
-    elif len(marker.args) >= 2:
+    elif len(marker.args) >= 2:  # noqa: PLR2004
         add_basemap = marker.args[1]
-    if len(marker.args) >= 3 and zoom_to_common_extent is not notset:
+    if len(marker.args) >= 3 and zoom_to_common_extent is not notset:  # noqa: PLR2004
         raise TypeError(
             "Multiple values for zoom_to_common_extent argument of qgis_show_map marker"
         )
-    elif len(marker.args) >= 3:
+    elif len(marker.args) >= 3:  # noqa: PLR2004
         zoom_to_common_extent = marker.args[2]
-    if len(marker.args) >= 4 and extent is not notset:
+    if len(marker.args) >= 4 and extent is not notset:  # noqa: PLR2004
         raise TypeError("Multiple values for extent argument of qgis_show_map marker")
-    elif len(marker.args) >= 4:
+    elif len(marker.args) >= 4:  # noqa: PLR2004
         extent = marker.args[3]
-    if len(marker.args) > 4:
+    if len(marker.args) > 4:  # noqa: PLR2004
         raise TypeError("Too many arguments for qgis_show_map marker")
 
     if timeout is notset:

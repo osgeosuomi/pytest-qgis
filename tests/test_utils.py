@@ -33,42 +33,53 @@ QGIS_3_12 = 31200
 
 
 @pytest.fixture
-def crs():
+def _set_crs() -> None:
     QgsProject.instance().setCrs(QgsCoordinateReferenceSystem(EPSG_4326))
 
 
 @pytest.fixture
-def layers_added(qgis_new_project, layer_polygon, layer_polygon_3067, raster_3067):
+def layers_added(
+    qgis_new_project,  # noqa: ARG001
+    layer_polygon,
+    layer_polygon_3067,
+    raster_3067,
+) -> None:
     QgsProject.instance().addMapLayers([raster_3067, layer_polygon_3067, layer_polygon])
 
 
-def test_get_common_extent_from_all_layers(
-    qgis_new_project, crs, layer_polygon, layer_polygon_3067
-):
+@pytest.mark.usefixtures("qgis_new_project", "_set_crs")
+def test_get_common_extent_from_all_layers(layer_polygon, layer_polygon_3067):
     QgsProject.instance().addMapLayers([layer_polygon, layer_polygon_3067])
     assert get_common_extent_from_all_layers().toString(0) == "23,61 : 32,68"
 
 
-def test_set_map_crs_based_on_layers_should_set_4326(qgis_new_project, layer_polygon):
+@pytest.mark.usefixtures("qgis_new_project")
+def test_set_map_crs_based_on_layers_should_set_4326(layer_polygon):
     layer_polygon2 = layer_polygon.clone()
     QgsProject.instance().addMapLayers([layer_polygon, layer_polygon2])
     set_map_crs_based_on_layers()
     assert QgsProject.instance().crs().authid() == EPSG_4326
 
 
-def test_set_map_crs_based_on_layers_should_set_3067(layers_added):
+@pytest.mark.usefixtures("layers_added")
+def test_set_map_crs_based_on_layers_should_set_3067():
     set_map_crs_based_on_layers()
     assert QgsProject.instance().crs().authid() == EPSG_3067
 
 
+@pytest.mark.usefixtures("qgis_processing", "layers_added", "_set_crs")
 def test_get_layers_with_different_crs(
-    layers_added, crs, layer_polygon_3067, raster_3067
+    layer_polygon_3067,
+    raster_3067,
 ):
     assert set(get_layers_with_different_crs()) == {layer_polygon_3067, raster_3067}
 
 
-def test_replace_layers_with_reprojected_clones(  # noqa: PLR0913
-    layers_added, crs, qgis_processing, layer_polygon_3067, raster_3067, tmp_path
+@pytest.mark.usefixtures("qgis_processing", "layers_added", "_set_crs")
+def test_replace_layers_with_reprojected_clones(
+    layer_polygon_3067,
+    raster_3067,
+    tmp_path,
 ):
     vector_layer_id = layer_polygon_3067.id()
     raster_layer_id = raster_3067.id()
