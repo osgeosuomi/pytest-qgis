@@ -1,4 +1,4 @@
-#  Copyright (C) 2021-2023 pytest-qgis Contributors.
+#  Copyright (C) 2021-2026 pytest-qgis Contributors.
 #
 #
 #  This file is part of pytest-qgis.
@@ -24,10 +24,6 @@ from qgis.core import (
     QgsVectorLayer,
 )
 from qgis.utils import iface
-
-from tests.utils import QGIS_VERSION
-
-QGIS_3_18 = 31800
 
 # DO not use this directly, this is only meant to be used with
 # replace_iface_with_qgis_iface fixture
@@ -78,9 +74,6 @@ def test_processing_run(qgis_processing):
     assert len(list(result["OUTPUT"].getFeatures())) > 0
 
 
-@pytest.mark.skipif(
-    QGIS_VERSION < QGIS_3_18, reason="https://github.com/qgis/QGIS/issues/40564"
-)
 def test_setup_qgis_iface(qgis_iface):
     assert iface == qgis_iface
 

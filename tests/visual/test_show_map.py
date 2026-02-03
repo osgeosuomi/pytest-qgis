@@ -1,4 +1,4 @@
-#  Copyright (C) 2021-2023 pytest-qgis Contributors.
+#  Copyright (C) 2021-2026 pytest-qgis Contributors.
 #
 #
 #  This file is part of pytest-qgis.
@@ -19,7 +19,7 @@
 import pytest
 from qgis.core import QgsProject, QgsRectangle
 
-from tests.utils import IN_CI, QGIS_VERSION
+from tests.utils import IN_CI
 
 """
 These tests are meant to be tested visually by the developer.
@@ -63,10 +63,6 @@ def test_show_map_with_basemap(layer_polygon):
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
-@pytest.mark.skipif(
-    QGIS_VERSION < QGIS_3_12,
-    reason="QGIS 3.10 test image cannot find correct algorithms",
-)
 def test_show_map_crs_change_to_3067(
     layer_polygon, layer_polygon_3067, raster_3067, qgis_version
 ):
@@ -77,10 +73,6 @@ def test_show_map_crs_change_to_3067(
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
-@pytest.mark.skipif(
-    QGIS_VERSION < QGIS_3_12,
-    reason="QGIS 3.10 test image cannot find correct algorithms",
-)
 def test_show_map_crs_change_to_3067_with_different_layer_order(
     layer_polygon, layer_polygon_3067, raster_3067, qgis_version
 ):
@@ -91,10 +83,6 @@ def test_show_map_crs_change_to_3067_with_different_layer_order(
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT, add_basemap=True)
-@pytest.mark.skipif(
-    QGIS_VERSION < QGIS_3_12,
-    reason="QGIS 3.10 test image cannot find correct algorithms",
-)
 def test_show_map_crs_change_to_3067_with_basemap(
     layer_polygon, layer_polygon_3067, raster_3067, qgis_version
 ):
@@ -105,10 +93,6 @@ def test_show_map_crs_change_to_3067_with_basemap(
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
-@pytest.mark.skipif(
-    QGIS_VERSION < QGIS_3_12,
-    reason="QGIS 3.10 test image cannot find correct algorithms",
-)
 def test_show_map_crs_change_to_4326(
     layer_polygon, raster_3067, layer_points, qgis_version
 ):
@@ -118,10 +102,6 @@ def test_show_map_crs_change_to_4326(
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
-@pytest.mark.skipif(
-    QGIS_VERSION < QGIS_3_12,
-    reason="QGIS 3.10 test image cannot find correct algorithms",
-)
 def test_show_map_crs_change_to_4326_2(layer_polygon, layer_points, layer_polygon_3067):
     QgsProject.instance().addMapLayers(
         [layer_points, layer_polygon_3067, layer_polygon]
