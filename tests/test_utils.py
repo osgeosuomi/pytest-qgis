@@ -1,4 +1,4 @@
-#  Copyright (C) 2021-2023 pytest-qgis Contributors.
+#  Copyright (C) 2021-2026 pytest-qgis Contributors.
 #
 #
 #  This file is part of pytest-qgis.
@@ -27,7 +27,7 @@ from pytest_qgis.utils import (
     replace_layers_with_reprojected_clones,
     set_map_crs_based_on_layers,
 )
-from tests.utils import EPSG_3067, EPSG_4326, QGIS_VERSION
+from tests.utils import EPSG_3067, EPSG_4326
 
 QGIS_3_12 = 31200
 
@@ -42,10 +42,6 @@ def layers_added(qgis_new_project, layer_polygon, layer_polygon_3067, raster_306
     QgsProject.instance().addMapLayers([raster_3067, layer_polygon_3067, layer_polygon])
 
 
-@pytest.mark.skipif(
-    QGIS_VERSION < QGIS_3_12,
-    reason="QGIS 3.10 test image cannot find correct algorithms",
-)
 def test_get_common_extent_from_all_layers(
     qgis_new_project, crs, layer_polygon, layer_polygon_3067
 ):
@@ -53,10 +49,6 @@ def test_get_common_extent_from_all_layers(
     assert get_common_extent_from_all_layers().toString(0) == "23,61 : 32,68"
 
 
-@pytest.mark.skipif(
-    QGIS_VERSION < QGIS_3_12,
-    reason="QGIS 3.10 test image cannot find correct algorithms",
-)
 def test_set_map_crs_based_on_layers_should_set_4326(qgis_new_project, layer_polygon):
     layer_polygon2 = layer_polygon.clone()
     QgsProject.instance().addMapLayers([layer_polygon, layer_polygon2])
@@ -75,10 +67,6 @@ def test_get_layers_with_different_crs(
     assert set(get_layers_with_different_crs()) == {layer_polygon_3067, raster_3067}
 
 
-@pytest.mark.skipif(
-    QGIS_VERSION < QGIS_3_12,
-    reason="QGIS 3.10 test image cannot find correct algorithms",
-)
 def test_replace_layers_with_reprojected_clones(  # noqa: PLR0913
     layers_added, crs, qgis_processing, layer_polygon_3067, raster_3067, tmp_path
 ):

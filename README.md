@@ -51,7 +51,7 @@ markers can be used.
 ### Hooks
 
 * `pytest_configure` hook is used to initialize and
-  configure [`QgsApplication`](https://qgis.org/pyqgis/master/core/QgsApplication.html). With QGIS >= 3.18 it is also
+  configure [`QgsApplication`](https://qgis.org/pyqgis/master/core/QgsApplication.html). It is also
   used to patch `qgis.utils.iface` with `qgis_iface` automatically.
 
   > Be careful not to import modules importing `qgis.utils.iface` in the root of conftest, because the `pytest_configure` hook has not yet patched `iface` in that point. See [this issue](https://github.com/osgeosuomi/pytest-qgis/issues/35) for details.
@@ -126,9 +126,8 @@ pip install pytest-qgis
 This project uses [uv](https://docs.astral.sh/uv/getting-started/installation/)
 to manage python packages. Make sure to have it installed first.
 
-- Create a venv that is aware of system QGIS libraries: `uv venv --system-site-packages`
-    - On Windows OSGeo4W v2 installs use `<osgeo>/apps/PythonXX/python.exe`
-      with [necessary patches](https://trac.osgeo.org/osgeo4w/ticket/692)
+- Create a venv that is aware of system QGIS libraries: `uv venv --system-site-packages`. Make sure to use same Python executable as QGIS.
+    - On Windows, maybe use a tool like [qgis-venv-creator](ttps://github.com/GispoCoding/qgis-venv-creator).
 
 ```shell
 # Activate the virtual environment

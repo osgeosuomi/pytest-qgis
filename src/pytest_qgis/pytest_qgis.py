@@ -53,8 +53,6 @@ if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
     from _pytest.mark import Mark
 
-QGIS_3_18 = 31800
-
 Settings = namedtuple(
     "Settings", ["gui_enabled", "qgis_init_disabled", "canvas_width", "canvas_height"]
 )
@@ -306,16 +304,7 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
     _IFACE = QgisInterface(_CANVAS, MockMessageBar(), _PARENT)
 
     # Patching imported iface (evaluated as None in tests) with iface.
-    # This only works with QGIS >= 3.18 since before that
-    # importing qgis.utils causes RecursionErrors. See this issue for details
-    # https://github.com/qgis/QGIS/issues/40564
-
-    if _QGIS_VERSION >= QGIS_3_18:
-        from qgis.utils import (  # noqa: PLC0415
-            iface,  # noqa: F401 # This import is required
-        )
-
-        mock.patch("qgis.utils.iface", _IFACE).start()
+    mock.patch("qgis.utils.iface", _IFACE).start()
 
     if _APP is not None:
         # QGIS zooms to the layer's extent if it
