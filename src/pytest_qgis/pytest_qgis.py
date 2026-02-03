@@ -25,7 +25,7 @@ import time
 import warnings
 from collections import namedtuple
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
@@ -87,12 +87,12 @@ SHOW_MAP_MARKER_DESCRIPTION = (
     f"can be provided as QgsRectangle."
 )
 
-_APP: Optional[QgsApplication] = None
-_CANVAS: Optional[QgsMapCanvas] = None
-_IFACE: Optional[QgisInterface] = None
-_PARENT: Optional[QtWidgets.QWidget] = None
-_AUTOUSE_QGIS: Optional[bool] = None
-_QGIS_CONFIG_PATH: Optional[Path] = None
+_APP: QgsApplication | None = None
+_CANVAS: QgsMapCanvas | None = None
+_IFACE: QgisInterface | None = None
+_PARENT: QtWidgets.QWidget | None = None
+_AUTOUSE_QGIS: bool | None = None
+_QGIS_CONFIG_PATH: Path | None = None
 
 try:
     _QGIS_VERSION = Qgis.versionInt()
@@ -146,7 +146,7 @@ def pytest_configure(config: "Config") -> None:
 
 
 @pytest.hookimpl(tryfirst=True)
-def pytest_runtest_teardown(item: pytest.Item, nextitem: Optional[pytest.Item]) -> None:  # noqa: ARG001
+def pytest_runtest_teardown(item: pytest.Item, nextitem: pytest.Item | None) -> None:  # noqa: ARG001
     request = item.funcargs.get("request")
     if request:
         ensure_qgis_layer_fixtures_are_cleaned(request)

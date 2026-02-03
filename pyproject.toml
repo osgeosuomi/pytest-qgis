@@ -16,7 +16,7 @@ readme = "README.md"
 dynamic = ["version"]
 keywords = ["pytest", "qgis", "QGIS", "PyQGIS"]
 
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 license = "GPL-2.0-or-later"
 license-files = ["LICENSE"]
 classifiers = [
@@ -25,14 +25,11 @@ classifiers = [
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Testing",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
@@ -99,7 +96,7 @@ show_column_numbers = true
 line-length = 88
 indent-width = 4
 
-target-version = "py37"
+target-version = "py310"
 
 lint.external = ["QGS"]
 

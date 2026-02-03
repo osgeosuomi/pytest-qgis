@@ -16,7 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 #
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 from qgis.core import (
     QgsFeature,
@@ -48,7 +48,7 @@ class QgisBot:
         self,
         layer: QgsVectorLayer,
         geometry: QgsGeometry,
-        attributes: Optional[Dict[str, Any]] = None,
+        attributes: dict[str, Any] | None = None,
         raise_from_warnings: bool = False,
         raise_from_errors: bool = True,
         show_dialog_timeout_milliseconds: int = 0,
@@ -148,8 +148,8 @@ class QgisBot:
 
     @staticmethod
     def get_qgs_attribute_dialog_widgets_by_name(
-        widget: Union[QgsAttributeDialog, QWidget],
-    ) -> Dict[str, QWidget]:
+        widget: QgsAttributeDialog | QWidget,
+    ) -> dict[str, QWidget]:
         """
         Gets recursively all attribute dialog widgets by name.
         :param widget: QgsAttributeDialog for the first time, afterwards QWidget.

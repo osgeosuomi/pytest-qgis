@@ -48,7 +48,7 @@ class MockMessageBar(QgsMessageBarOriginal):
     @typing.overload
     def pushMessage(
         self,
-        text: typing.Optional[str] = None,
+        text: str | None = None,
         level: Qgis.MessageLevel = Qgis.MessageLevel.Info,
         duration: int = -1,
     ) -> None: ...
@@ -56,8 +56,8 @@ class MockMessageBar(QgsMessageBarOriginal):
     @typing.overload
     def pushMessage(
         self,
-        title: typing.Optional[str] = None,
-        text: typing.Optional[str] = None,
+        title: str | None = None,
+        text: str | None = None,
         level: Qgis.MessageLevel = Qgis.MessageLevel.Info,
         duration: int = -1,
     ) -> None: ...
@@ -65,9 +65,9 @@ class MockMessageBar(QgsMessageBarOriginal):
     @typing.overload
     def pushMessage(
         self,
-        title: typing.Optional[str] = None,
-        text: typing.Optional[str] = None,
-        showMore: typing.Optional[str] = None,  # noqa: N803
+        title: str | None = None,
+        text: str | None = None,
+        showMore: str | None = None,  # noqa: N803
         level: Qgis.MessageLevel = Qgis.MessageLevel.Info,
         duration: int = -1,
     ) -> None: ...
@@ -75,8 +75,8 @@ class MockMessageBar(QgsMessageBarOriginal):
     @typing.no_type_check
     def pushMessage(  # noqa: N802
         self,
-        *args: typing.Union[str, int],
-        **kwargs: dict[str, typing.Union[str, int]],
+        *args: str | int,
+        **kwargs: dict[str, str | int],
     ) -> None:
         """A mocked method for pushing a message to the bar."""
         title = kwargs.get("title")

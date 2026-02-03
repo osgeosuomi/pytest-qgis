@@ -26,7 +26,6 @@ __copyright__ = (
 
 import logging
 import typing
-from typing import Optional, Union
 from unittest.mock import MagicMock
 
 from qgis.core import (
@@ -75,7 +74,7 @@ class QgisInterface(QObject):
         self.canvas = canvas
         self._messageBar = messageBar
         self._mainWindow = mainWindow
-        self._active_layer_id: Optional[str] = None
+        self._active_layer_id: str | None = None
 
         # Set up slots so we can mimic the behaviour of QGIS when layers
         # are added.
@@ -187,24 +186,24 @@ class QgisInterface(QObject):
 
     @typing.overload
     def addRasterLayer(
-        self, rasterLayerPath: Optional[str], baseName: Optional[str] = None
-    ) -> Optional[QgsRasterLayer]:
+        self, rasterLayerPath: str | None, baseName: str | None = None
+    ) -> QgsRasterLayer | None:
         pass
 
     @typing.overload
     def addRasterLayer(
-        self, url: Optional[str], layerName: Optional[str], providerKey: Optional[str]
-    ) -> Optional[QgsRasterLayer]:
+        self, url: str | None, layerName: str | None, providerKey: str | None
+    ) -> QgsRasterLayer | None:
         pass
 
     def addRasterLayer(
         self, *args: str, **kwargs: dict[str, str]
-    ) -> Optional[QgsRasterLayer]:
+    ) -> QgsRasterLayer | None:
         layer = QgsRasterLayer(*args, **kwargs)
         self.addLayers([layer])
         return layer
 
-    def activeLayer(self) -> Optional[QgsMapLayer]:
+    def activeLayer(self) -> QgsMapLayer | None:
         """Get pointer to the active layer (layer selected in the legend)."""
         return (
             QgsProject.instance().mapLayer(self._active_layer_id)
@@ -236,7 +235,7 @@ class QgisInterface(QObject):
         :type action: QAction
         """
 
-    def addToolBar(self, toolbar: Union[str, QToolBar]) -> QToolBar:
+    def addToolBar(self, toolbar: str | QToolBar) -> QToolBar:
         """Add toolbar with specified name.
 
         :param toolbar: Name for the toolbar or QToolBar object.
