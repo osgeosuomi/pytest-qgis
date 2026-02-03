@@ -14,7 +14,7 @@ repos:
     rev: v0.14.11
     hooks:
       # Run the linter.
-      - id: ruff
+      - id: ruff-check
         args: [--fix, --exit-non-zero-on-fix, --extend-fixable=F401]
       # Run the formatter.
       - id: ruff-format
@@ -25,3 +25,4 @@ repos:
       - id: flake8
         additional_dependencies:
           - flake8-qgis==1.1.0
+          - flake8-pyproject==1.2.4
