@@ -20,13 +20,12 @@ jobs:
       - name: Install venv
         run: |
           apt update
-          apt install -y python3-venv
+          apt install -y python3-venv curl
       - name: Create virtualenv and install dependencies
         run: |
           python3 -m venv --system-site-packages .venv
-          .venv/bin/pip install -U pip setuptools
-          .venv/bin/pip install -qr requirements.txt pytest-cov
-          .venv/bin/pip install -e .
+          .venv/bin/pip3 install -q -U uv
+          .venv/bin/uv sync --locked
       - name: Run tests
         env:
           QGIS_IN_CI: 1
