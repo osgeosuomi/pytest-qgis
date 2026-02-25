@@ -62,7 +62,7 @@ def test_processing_run():
     from qgis import processing  # noqa: PLC0415
 
     # Use any algo that is available on all test platforms
-    result = processing.run(
+    result = processing.run(  # noqa: QGS110
         "qgis:regularpoints",
         {
             "EXTENT": "0,1,0,1",
@@ -87,8 +87,8 @@ def test_canvas_should_be_released(qgis_canvas, layer_polygon, layer_points):
     will cause segmentation faults after test session if
     the canvas is not released properly.
     """
-    QgsProject.instance().addMapLayer(layer_polygon)
-    QgsProject.instance().addMapLayer(layer_points)
+    assert QgsProject.instance().addMapLayer(layer_polygon)
+    assert QgsProject.instance().addMapLayer(layer_points)
     qgis_canvas.zoomToFullExtent()
 
 

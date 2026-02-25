@@ -32,6 +32,7 @@ from qgis.core import (
     QgsLayerTreeGroup,
     QgsLayerTreeLayer,
     QgsMapLayer,
+    QgsProcessing,
     QgsProject,
     QgsRasterLayer,
     QgsRectangle,
@@ -129,9 +130,13 @@ def replace_layers_with_reprojected_clones(
 
     map_crs = QgsProject.instance().crs()
     for input_layer in vector_layers:
-        output_layer: QgsVectorLayer = processing.run(
+        output_layer: QgsVectorLayer = processing.run(  # noqa: QGS110
             "native:reprojectlayer",
-            {"INPUT": input_layer, "TARGET_CRS": map_crs, "OUTPUT": "TEMPORARY_OUTPUT"},
+            {
+                "INPUT": input_layer,
+                "TARGET_CRS": map_crs,
+                "OUTPUT": QgsProcessing.TEMPORARY_OUTPUT,
+            },
         )["OUTPUT"]
         if not output_layer.crs().isValid():
             output_layer.setCrs(map_crs)
@@ -166,13 +171,20 @@ def copy_layer_style_and_position(
     Copy layer style and position to another layer.
     """
     style_file = str(Path(tmp_path, f"{layer1.id()}.qml"))
-    _, succeeded = layer1.saveNamedStyle(style_file)
-    if succeeded:
-        layer2.loadNamedStyle(style_file)
+    error_msg, succeeded = layer1.saveNamedStyle(style_file)
+    if not succeeded:
+        raise AssertionError(f"Failed to save layer style to {style_file}: {error_msg}")
+
+    error_msg, succeeded = layer2.loadNamedStyle(style_file)
+    if not succeeded:
+        raise AssertionError(
+            f"Failed to load layer style from {style_file}: {error_msg}"
+        )
     layer2.setMetadata(layer1.metadata())
     layer2.setName(layer1.name())
-    if layer2.isValid():
-        QgsProject.instance().addMapLayer(layer2, False)
+    if layer2.isValid():  # noqa: SIM102
+        if not QgsProject.instance().addMapLayer(layer2, False):
+            raise AssertionError(f"Failed to add layer {layer2.name()} to project")
 
     root: QgsLayerTree = QgsProject.instance().layerTreeRoot()
     layer_tree_layer: QgsLayerTreeLayer = root.findLayer(layer1)
@@ -244,7 +256,8 @@ def _set_layer_owner_to_project(layer: Any) -> None:
         and not sip.isdeleted(layer)
         and layer.id() not in QgsProject.instance().mapLayers(True)
     ):
-        QgsProject.instance().addMapLayer(layer)
+        if not QgsProject.instance().addMapLayer(layer):
+            raise AssertionError(f"Failed to add layer {layer.name()} to project")
         QgsProject.instance().removeMapLayer(layer)
 
 

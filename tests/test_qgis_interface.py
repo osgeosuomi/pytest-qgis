@@ -66,8 +66,8 @@ def test_iface_active_layer(
     layer_polygon: "QgsVectorLayer",
     layer_points: "QgsVectorLayer",
 ):
-    QgsProject.instance().addMapLayer(layer_polygon)
-    QgsProject.instance().addMapLayer(layer_points)
+    assert QgsProject.instance().addMapLayer(layer_polygon)
+    assert QgsProject.instance().addMapLayer(layer_points)
 
     assert qgis_iface.activeLayer() is None
     qgis_iface.setActiveLayer(layer_polygon)
@@ -105,5 +105,5 @@ def test_new_project_clears_mocks(qgis_iface: "QgisInterface"):
     qgis_iface.pluginManagerInterface()
     assert qgis_iface.pluginManagerInterface.call_count == 2
 
-    qgis_iface.newProject()
+    assert qgis_iface.newProject()
     assert qgis_iface.pluginManagerInterface.call_count == 0

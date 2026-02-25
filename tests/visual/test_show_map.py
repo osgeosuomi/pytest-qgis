@@ -43,23 +43,23 @@ def setup(qgis_new_project):
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
 def test_show_map(layer_polygon, qgis_canvas, qgis_parent):
-    QgsProject.instance().addMapLayers([layer_polygon])
+    assert QgsProject.instance().addMapLayers([layer_polygon])
     assert qgis_parent.size() == qgis_canvas.size()
 
 
 @pytest.mark.qgis_show_map(timeout=0)
 def test_show_map_with_zero_timeout(layer_polygon):
-    QgsProject.instance().addMapLayers([layer_polygon])
+    assert QgsProject.instance().addMapLayers([layer_polygon])
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT, extent=QgsRectangle(25, 65, 26, 66))
 def test_show_map_custom_extent(layer_polygon):
-    QgsProject.instance().addMapLayers([layer_polygon])
+    assert QgsProject.instance().addMapLayers([layer_polygon])
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT, add_basemap=True)
 def test_show_map_with_basemap(layer_polygon):
-    QgsProject.instance().addMapLayers([layer_polygon])
+    assert QgsProject.instance().addMapLayers([layer_polygon])
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
@@ -69,7 +69,9 @@ def test_show_map_crs_change_to_3067(
     layer_polygon_3067.setOpacity(0.3)
     if qgis_version > QGIS_3_18:
         raster_3067.setOpacity(0.9)
-    QgsProject.instance().addMapLayers([layer_polygon, layer_polygon_3067, raster_3067])
+    assert QgsProject.instance().addMapLayers(
+        [layer_polygon, layer_polygon_3067, raster_3067]
+    )
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
@@ -79,7 +81,9 @@ def test_show_map_crs_change_to_3067_with_different_layer_order(
     layer_polygon_3067.setOpacity(0.3)
     if qgis_version > QGIS_3_18:
         raster_3067.setOpacity(0.9)
-    QgsProject.instance().addMapLayers([raster_3067, layer_polygon_3067, layer_polygon])
+    assert QgsProject.instance().addMapLayers(
+        [raster_3067, layer_polygon_3067, layer_polygon]
+    )
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT, add_basemap=True)
@@ -89,7 +93,9 @@ def test_show_map_crs_change_to_3067_with_basemap(
     layer_polygon_3067.setOpacity(0.3)
     if qgis_version > QGIS_3_18:
         raster_3067.setOpacity(0.9)
-    QgsProject.instance().addMapLayers([layer_polygon, layer_polygon_3067, raster_3067])
+    assert QgsProject.instance().addMapLayers(
+        [layer_polygon, layer_polygon_3067, raster_3067]
+    )
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
@@ -98,12 +104,14 @@ def test_show_map_crs_change_to_4326(
 ):
     if qgis_version > QGIS_3_18:
         raster_3067.setOpacity(0.9)
-    QgsProject.instance().addMapLayers([layer_points, layer_polygon, raster_3067])
+    assert QgsProject.instance().addMapLayers(
+        [layer_points, layer_polygon, raster_3067]
+    )
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
 def test_show_map_crs_change_to_4326_2(layer_polygon, layer_points, layer_polygon_3067):
-    QgsProject.instance().addMapLayers(
+    assert QgsProject.instance().addMapLayers(
         [layer_points, layer_polygon_3067, layer_polygon]
     )
 
@@ -114,7 +122,7 @@ def test_map_extent_should_not_change_to_layers_extent_when_processing_events(
 ):
     extent_smaller_than_layer = QgsRectangle(475804, 7145949.5, 549226, 7219371.5)
 
-    QgsProject.instance().addMapLayer(layer_polygon_3067)
+    assert QgsProject.instance().addMapLayer(layer_polygon_3067)
     qgis_canvas.setExtent(extent_smaller_than_layer)
 
     # This triggers the map to set the extent based on the layer
