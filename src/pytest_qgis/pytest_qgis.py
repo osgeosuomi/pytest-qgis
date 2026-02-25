@@ -207,7 +207,7 @@ def qgis_new_project(qgis_iface: QgisInterface, request: "SubRequest") -> QgsPro
 
     :return: QgsProject instance
     """
-    qgis_iface.newProject()
+    qgis_iface.newProject()  # noqa: QGS201
 
     # Clear the project properly if qgis_show_map marker is not used
     show_map_marker = request.node.get_closest_marker(SHOW_MAP_MARKER)
@@ -377,7 +377,10 @@ def _configure_qgis_map(
         if settings.add_basemap:
             # Add Natural Earth Countries
             countries_layer = _get_countries_layer(_get_world_map_geopackage(tmp_path))
-            QgsProject.instance().addMapLayer(countries_layer)
+            if not QgsProject.instance().addMapLayer(countries_layer):
+                raise AssertionError(
+                    f"Failed to add countries layer: {countries_layer.name()}"
+                )
             if countries_layer.crs() != QgsProject.instance().crs():
                 _initialize_processing(qgis_app)
                 replace_layers_with_reprojected_clones([countries_layer], tmp_path)

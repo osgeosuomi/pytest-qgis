@@ -44,19 +44,21 @@ def layers_added(
     layer_polygon_3067,
     raster_3067,
 ) -> None:
-    QgsProject.instance().addMapLayers([raster_3067, layer_polygon_3067, layer_polygon])
+    assert QgsProject.instance().addMapLayers(
+        [raster_3067, layer_polygon_3067, layer_polygon]
+    )
 
 
 @pytest.mark.usefixtures("qgis_new_project", "_set_crs")
 def test_get_common_extent_from_all_layers(layer_polygon, layer_polygon_3067):
-    QgsProject.instance().addMapLayers([layer_polygon, layer_polygon_3067])
+    assert QgsProject.instance().addMapLayers([layer_polygon, layer_polygon_3067])
     assert get_common_extent_from_all_layers().toString(0) == "23,61 : 32,68"
 
 
 @pytest.mark.usefixtures("qgis_new_project")
 def test_set_map_crs_based_on_layers_should_set_4326(layer_polygon):
     layer_polygon2 = layer_polygon.clone()
-    QgsProject.instance().addMapLayers([layer_polygon, layer_polygon2])
+    assert QgsProject.instance().addMapLayers([layer_polygon, layer_polygon2])
     set_map_crs_based_on_layers()
     assert QgsProject.instance().crs().authid() == EPSG_4326
 

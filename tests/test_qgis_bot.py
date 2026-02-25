@@ -41,7 +41,7 @@ def layer_with_soft_constraint(layer_points: "QgsVectorLayer") -> "QgsVectorLaye
         QgsFieldConstraints.ConstraintStrengthSoft,
     )
 
-    layer_points.startEditing()
+    assert layer_points.startEditing()
 
     return layer_points
 
@@ -58,7 +58,7 @@ def layer_with_hard_constraint(layer_points: "QgsVectorLayer") -> "QgsVectorLaye
         QgsFieldConstraints.ConstraintStrengthHard,
     )
 
-    layer_points.startEditing()
+    assert layer_points.startEditing()
 
     return layer_points
 
@@ -123,7 +123,7 @@ def test_create_simple_feature_with_attribute_dialog(
     layer = layer_points
     count = layer.featureCount()
 
-    layer.startEditing()
+    assert layer.startEditing()
     feat = qgis_bot.create_feature_with_attribute_dialog(
         layer, QgsGeometry.fromWkt("POINT(0,0)")
     )

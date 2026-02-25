@@ -30,7 +30,7 @@ def test_attribute_dialog_change(qgis_iface, layer_points, qgis_bot, qtbot):
     # The essential thing is QgsGui.editorWidgetRegistry().initEditors()
     layer = layer_points
 
-    layer.startEditing()
+    assert layer.startEditing()
     f = layer.getFeature(1)
     assert f
 
@@ -53,6 +53,6 @@ def test_attribute_dialog_change(qgis_iface, layer_points, qgis_bot, qtbot):
 
     qtbot.wait(TIMEOUT)
     dialog.accept()
-    layer.commitChanges()
+    assert layer.commitChanges()
 
     assert layer.getFeature(1)["text_field"] == test_text
