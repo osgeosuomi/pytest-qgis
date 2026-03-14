@@ -7,54 +7,28 @@ on:
 
 jobs:
   build:
-    name: Build Release
+    name: Build and publish release
     runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-          cache: pip
-
-      - name: Install dependencies
-        run: |
-            python -m pip install --upgrade build
-
-      - name: Build wheels and source tarball
-        run: >-
-          python -m build
-
-      - name: Archive Production Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: dist
-          path: dist
-
-  release:
-    name: Deploy Release
-    needs: build
-    runs-on: ubuntu-latest
-    env:
+    environment:
       name: pypi-release
-      url: https://pypi.org/p/pytest-qgis
     permissions:
-        id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
-        contents: write
+      id-token: write
+      contents: read
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
-      - name: Download Artifact
-        uses: actions/download-artifact@v3
-        with:
-            name: dist
-            path: dist
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Install Python 3.13
+        run: uv python install 3.13
+      - name: Build
+        run: uv build
+      - name: Publish
+        run: uv publish
       - name: Get version from tag
         id: tag_name
         run: |
           echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
         shell: bash
-
       - name: create github release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -64,6 +38,3 @@ jobs:
           files: dist/*
           draft: false
           prerelease: false
-
-      - name: publish to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
