@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 @pytest.mark.parametrize(
     ("args", "kwargs", "expected_level", "expected_message"),
     [
-        (["text"], {}, Qgis.Info, "no-title:text"),
+        (["text"], {}, Qgis.MessageLevel.Info, "no-title:text"),
         (["title"], {"text": "text"}, Qgis.MessageLevel.Info, "title:text"),
         (
             ["text", Qgis.MessageLevel.Success],
@@ -39,13 +39,13 @@ if TYPE_CHECKING:
         (
             ["title", "text", Qgis.MessageLevel.Warning, 20],
             {},
-            Qgis.Warning,
+            Qgis.MessageLevel.Warning,
             "title:text",
         ),
         (
             ["title", "text", "showMore", Qgis.MessageLevel.Warning, 20],
             {},
-            Qgis.Warning,
+            Qgis.MessageLevel.Warning,
             "title:text",
         ),
         (
@@ -57,7 +57,7 @@ if TYPE_CHECKING:
                 "level": Qgis.MessageLevel.Warning,
                 "duration": 20,
             },
-            Qgis.Warning,
+            Qgis.MessageLevel.Warning,
             "title:text",
         ),
     ],
