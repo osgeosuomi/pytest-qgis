@@ -1,4 +1,4 @@
-#  Copyright (C) 2021-2023 pytest-qgis Contributors.
+#  Copyright (C) 2021-2026 pytest-qgis Contributors.
 #
 #
 #  This file is part of pytest-qgis.
