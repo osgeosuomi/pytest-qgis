@@ -1,4 +1,4 @@
-# Unreleased
+# Version 3.0.0 (18-03-2026)
 
 ## Fixes
 

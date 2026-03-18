@@ -22,19 +22,14 @@ jobs:
         run: uv python install 3.13
       - name: Build
         run: uv build
+        # TODO: fix gh release pipeline
+#      - name: create github release
+#        id: create_release
+#        uses: softprops/action-gh-release@v2
+#        if: github.ref_type == 'tag'
+#        with:
+#          files: dist/*
+#          draft: true
+#          prerelease: false
       - name: Publish
         run: uv publish
-      - name: Get version from tag
-        id: tag_name
-        run: |
-          echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
-        shell: bash
-      - name: create github release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          files: dist/*
-          draft: false
-          prerelease: false
