@@ -182,14 +182,14 @@ wheels = [
 
 [[package]]
 name = "flake8-qgis"
-version = "1.1.0"
+version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "flake8" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f7/78/d889b892ce22c0ad10e3bfeff416a0eebc6918a638b4a3abb094c91c43c4/flake8_qgis-1.1.0.tar.gz", hash = "sha256:1c689040eee52edb4c8636167a0bde792a8bfc0252e5ae702ff86a88438096cb", size = 6906, upload-time = "2025-05-19T11:24:22.071Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/47/0878e7030683d9f54f98991384c15c07787eb2921c29609b699d64c0636f/flake8_qgis-2.0.1.tar.gz", hash = "sha256:aeb11ab9c552edad65da338ddbfd706715e1030d2a5d190306442473a76bf9f5", size = 24881, upload-time = "2026-03-18T06:33:32.048Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9d/33/2a5d9cf751d6a3e5b0c04ef9d0b46768d90f05eb856cd2f1b02c80c3a749/flake8_qgis-1.1.0-py3-none-any.whl", hash = "sha256:c29e0544ebe4ce3e0dea6f05442e29b03c70aa33d59d451394772b0b4c34a105", size = 6479, upload-time = "2025-05-19T11:24:20.42Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/53/2a77833e65edfe720e8309f99a8e0e0757723d8d9ff13bfe4b1d474a0822/flake8_qgis-2.0.1-py3-none-any.whl", hash = "sha256:56134fa9ac315a23fee4b1539d74feda03448fe43925b904430da35c9e7c947d", size = 18195, upload-time = "2026-03-18T06:33:30.882Z" },
 ]
 
 [[package]]
@@ -494,7 +494,7 @@ requires-dist = [{ name = "pytest", specifier = ">=6.0" }]
 development = [
     { name = "flake8" },
     { name = "flake8-pyproject" },
-    { name = "flake8-qgis" },
+    { name = "flake8-qgis", specifier = ">=2.0.1" },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },

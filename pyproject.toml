@@ -54,7 +54,7 @@ development = [
     # Linting
     "flake8",
     "flake8-pyproject",
-    "flake8-qgis",
+    "flake8-qgis>=2.0.1",
     "mypy",
     "pre-commit",
     "ruff",
