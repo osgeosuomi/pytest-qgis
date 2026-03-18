@@ -5,6 +5,10 @@
 * [#74](https://github.com/osgeosuomi/pytest-qgis/pull/74) Process events before creating new feature with QgisBot.create_feature_with_attribute_dialog
 * [#76](https://github.com/osgeosuomi/pytest-qgis/pull/76) Improve stub classes QgisInterface and QgsMessageBar
 
+## Maintenance tasks
+
+* Add Qt6 and QGIS>=4 support for the plugin
+
 ## API Breaks
 
 * Drop Python 3.7–3.9 support
