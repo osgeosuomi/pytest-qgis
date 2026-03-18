@@ -40,7 +40,7 @@ dependencies = ["pytest >= 6.0"]
 [project.urls]
 homepage = "https://github.com/osgeosuomi/pytest-qgis"
 repository = "https://github.com/osgeosuomi/pytest-qgis"
-changelog = "https://github.com/osgeosuomi/pytest-qgis/blob/master/CHANGELOG.md"
+changelog = "https://github.com/osgeosuomi/pytest-qgis/blob/main/CHANGELOG.md"
 
 [project.entry-points.pytest11]
 pytest_qgis = "pytest_qgis"
