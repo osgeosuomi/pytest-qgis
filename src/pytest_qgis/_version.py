@@ -17,4 +17,4 @@
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 
 
-__version__ = "3.0.0"
+__version__ = "3.0.0.post0"
