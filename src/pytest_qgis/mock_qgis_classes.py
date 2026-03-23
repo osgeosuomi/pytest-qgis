@@ -107,11 +107,10 @@ class MockMessageBar(QgsMessageBarOriginal):
         self.messages[level].append(msg)
 
     # NOTE: should be a slot
-    def pushWarning(
+    def pushWarning(  # noqa: N802
         self,
         title: str,
         message: str,
-    ):
-        """Pushes a warning message that must be manually dismissed by the user.
-        """
+    ) -> None:
+        """Pushes a warning message that must be manually dismissed by the user."""
         self.pushMessage(title, message, Qgis.MessageLevel.Warning, -1)

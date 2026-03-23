@@ -55,7 +55,7 @@ from qgis.core import (
 )
 from qgis.gui import QgsMapCanvas
 from qgis.PyQt import sip
-from qgis.PyQt.QtCore import QObject, pyqtSignal, pyqtSlot, QSize
+from qgis.PyQt.QtCore import QObject, QSize, pyqtSignal, pyqtSlot
 from qgis.PyQt.QtWidgets import (
     QAction,
     QDockWidget,
@@ -292,8 +292,8 @@ class QgisInterface(QObject):
         pass
 
     def removeDockWidget(self, dockwidget: QDockWidget) -> None:
-        """Removes the specified dock widget from main window 
-            (without deleting it).
+        """Removes the specified dock widget from main window
+        (without deleting it).
         """
         pass
 
@@ -309,13 +309,11 @@ class QgisInterface(QObject):
         return self._layers
 
     def setActiveLayer(self, layer: QgsMapLayer) -> None:
-        """Set the active layer (layer gets selected in the legend)
-        """
+        """Set the active layer (layer gets selected in the legend)"""
         self._active_layer_id = layer.id()
 
-    def iconSize(self, dockedToolbar: bool) -> int: 
+    def iconSize(self, dockedToolbar: bool) -> int:
         """Returns the toolbar icon size.
-        
         :param dockedToolbar: If True, the icon size
         for toolbars contained within dockes is returned
         """

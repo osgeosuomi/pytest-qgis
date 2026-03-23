@@ -75,3 +75,5 @@ target/
 /tests/data/db.gpkg-shm
 /tests/data/db.gpkg-wal
 /tests/data/*.tif.aux.xml
+
+.qgis-settings
