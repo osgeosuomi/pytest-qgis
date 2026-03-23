@@ -17,10 +17,10 @@
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 
 import contextlib
+import logging
 import os.path
 import shutil
 import sys
-import tempfile
 import time
 import warnings
 from collections import namedtuple
@@ -29,11 +29,18 @@ from typing import TYPE_CHECKING
 from unittest import mock
 
 import pytest
-from qgis.core import Qgis, QgsApplication, QgsProject, QgsRectangle, QgsVectorLayer
+from qgis.core import (
+    Qgis,
+    QgsApplication,
+    QgsProject,
+    QgsRectangle,
+    QgsSettings,
+    QgsVectorLayer,
+)
 from qgis.gui import QgisInterface as QgisInterfaceOrig
 from qgis.gui import QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapCanvas
 from qgis.PyQt import QtCore, QtWidgets, sip
-from qgis.PyQt.QtCore import QCoreApplication, Qt
+from qgis.PyQt.QtCore import QCoreApplication, QSettings, Qt
 from qgis.PyQt.QtWidgets import QMainWindow, QMessageBox, QWidget
 
 from pytest_qgis.mock_qgis_classes import MockMessageBar
@@ -53,14 +60,18 @@ if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
     from _pytest.mark import Mark
 
+
+LOGGER = logging.getLogger("QGIS")
+
 Settings = namedtuple(
-    "Settings", [
-        "gui_enabled", 
+    "Settings",
+    [
+        "gui_enabled",
         "qgis_init_disabled",
         "qgis_server",
         "canvas_width",
         "canvas_height",
-    ]
+    ],
 )
 ShowMapSettings = namedtuple(
     "ShowMapSettings", ["timeout", "add_basemap", "zoom_to_common_extent", "extent"]
@@ -126,9 +137,9 @@ def pytest_addoption(parser: "Parser") -> None:
     )
 
     parser.addini(
-        SERVER_KEY, 
-        "QGIS Server session", 
-        type="bool", 
+        SERVER_KEY,
+        "QGIS Server session",
+        type="bool",
         default=SERVER_DEFAULT,
     )
 
@@ -182,7 +193,7 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
                 _CANVAS.deleteLater()
 
         # NOTE: this cause a core dump with qgis/qgis image
-        #_APP.exitQgis()
+        # _APP.exitQgis()
 
 
 @pytest.fixture(scope="session")
@@ -203,10 +214,7 @@ def qgis_version() -> int:
 
 
 @pytest.fixture(scope="session")
-def qgis_iface() -> Optional[QgisInterfaceOrig]:
-    if _QGIS_SERVER:
-        return None
-
+def qgis_iface() -> QgisInterfaceOrig:
     assert _IFACE
     return _IFACE
 
@@ -268,8 +276,8 @@ def qgis_bot(qgis_iface: QgisInterface) -> QgisBot:
 @pytest.fixture(autouse=True)
 def qgis_show_map(
     qgis_app: QgsApplication,
-    qgis_iface: Optional[QgisInterface],
-    qgis_parent: Optional[QWidget],
+    qgis_iface: QgisInterface | None,
+    qgis_parent: QWidget | None,
     tmp_path: Path,
     request: "SubRequest",
 ) -> None:
@@ -280,6 +288,8 @@ def qgis_show_map(
     if _QGIS_SERVER:
         yield
         return
+
+    assert qgis_iface is not None
 
     show_map_marker = request.node.get_closest_marker(SHOW_MAP_MARKER)
     common_settings: Settings = request.config._plugin_settings
@@ -308,9 +318,6 @@ def qgis_show_map(
 
 
 def _load_qgis_settings(config: "Config") -> None:
-    from qgis.core import QgsSettings
-    from qgis.PyQt.QtCore import QSettings
-
     rootdir = config.rootpath
     path = rootdir.joinpath(".qgis-settings")
 
@@ -334,7 +341,7 @@ def _load_qgis_settings(config: "Config") -> None:
     QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, str(settings_path))
 
     qgssettings = QgsSettings()
-    print("QGIS Settings loaded from ", qgssettings.fileName(), file=sys.stderr)
+    LOGGER.info("QGIS Settings loaded from %s", qgssettings.fileName())
 
 
 def _start_and_configure_qgis_app(config: "Config") -> None:
@@ -348,7 +355,8 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
     QCoreApplication.setApplicationName(QgsApplication.QGIS_APPLICATION_NAME)
 
     QCoreApplication.setAttribute(
-        Qt.ApplicationAttribute.AA_ShareOpenGLContexts, True,
+        Qt.ApplicationAttribute.AA_ShareOpenGLContexts,
+        True,
     )
 
     _load_qgis_settings(config)
@@ -356,24 +364,30 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
     platform = "server" if settings.qgis_server else None
 
     if not settings.qgis_init_disabled:
-        _APP = QgsApplication([], GUIenabled=settings.gui_enabled, platformName=platform)
-        if settings.qgis_server:
-            pass
-        else:
+        _APP = QgsApplication(
+            [],
+            GUIenabled=settings.gui_enabled,
+            platformName=platform,
+        )
+        # Do not initialize QGIS app in qgis server mode
+        # Since this is done in QgsServer() initialization
+        if not settings.qgis_server:
             _APP.initQgis()
             QgsGui.editorWidgetRegistry().initEditors()
 
-            _PARENT = QMainWindow()
-            _CANVAS = QgsMapCanvas(_PARENT)
-            _PARENT.resize(QtCore.QSize(settings.canvas_width, settings.canvas_height))
-            _CANVAS.resize(QtCore.QSize(settings.canvas_width, settings.canvas_height))
+    if not settings.qgis_server:
+        _PARENT = QMainWindow()
+        _CANVAS = QgsMapCanvas(_PARENT)
+        _PARENT.resize(QtCore.QSize(settings.canvas_width, settings.canvas_height))
+        _CANVAS.resize(QtCore.QSize(settings.canvas_width, settings.canvas_height))
 
-            # QgisInterface is a stub implementation of the QGIS plugin interface
-            _IFACE = QgisInterface(_CANVAS, MockMessageBar(), _PARENT)
+        # QgisInterface is a stub implementation of the QGIS plugin interface
+        _IFACE = QgisInterface(_CANVAS, MockMessageBar(), _PARENT)
 
-            # Patching imported iface (evaluated as None in tests) with iface
-            mock.patch("qgis.utils.iface", _IFACE).start()
+        # Patching imported iface (evaluated as None in tests) with iface
+        mock.patch("qgis.utils.iface", _IFACE).start()
 
+        if _APP is not None:
             # QGIS zooms to the layer's extent if it
             # is the first layer added to the map.
             # If the qgis_show_map marker is used, this zooming might occur
@@ -382,21 +396,22 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
             # It is better to process events right after adding the
             # layer to avoid these kind of problems.
             QgsProject.instance().legendLayersAdded.connect(_APP.processEvents)
-        
+
+    if _APP is not None:
+        # Initialize plugin_path is all cases
         _init_qgis_plugins_path(_APP)
 
 
 def _init_qgis_plugins_path(qgis_app: QgsApplication) -> None:
-    # Give access to python QGIS plugins 
-    python_plugins_path = os.path.join(_APP.pkgDataPath(), "python", "plugins")
-    print("QGIS plugins path:", python_plugins_path, file=sys.stderr)
-    sys.path.append(python_plugins_path)
+    # Give access to python QGIS plugins
+    python_plugins_path = os.path.join(qgis_app.pkgDataPath(), "python", "plugins")
+    if python_plugins_path not in sys.path:
+        LOGGER.info("QGIS plugins path: %s", python_plugins_path)
+        sys.path.append(python_plugins_path)
 
 
 def _initialize_processing(qgis_app: QgsApplication) -> None:
-    python_plugins_path = os.path.join(qgis_app.pkgDataPath(), "python", "plugins")
-    if python_plugins_path not in sys.path:
-        sys.path.append(python_plugins_path)
+    _init_qgis_plugins_path(qgis_app)
     from processing.core.Processing import Processing  # noqa: PLC0415
 
     Processing.initialize()
@@ -483,7 +498,7 @@ def _configure_qgis_map(
 
 
 def _parse_settings(config: "Config") -> Settings:
-    global _QGIS_SERVER
+    global _QGIS_SERVER  #  noqa: PLW0603
 
     qgis_server = config.getini(SERVER_KEY)
     if qgis_server:
@@ -501,7 +516,13 @@ def _parse_settings(config: "Config") -> Settings:
     canvas_width = int(config.getini(CANVAS_WIDTH_KEY))
     canvas_height = int(config.getini(CANVAS_HEIGHT_KEY))
 
-    return Settings(gui_enabled, qgis_init_disabled, qgis_server, canvas_width, canvas_height)
+    return Settings(
+        gui_enabled,
+        qgis_init_disabled,
+        qgis_server,
+        canvas_width,
+        canvas_height,
+    )
 
 
 def _parse_show_map_marker(marker: "Mark") -> ShowMapSettings:  # noqa: C901, PLR0912 TODO: Fix complexity
