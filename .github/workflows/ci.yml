@@ -12,7 +12,7 @@ jobs:
       image: qgis/qgis:${{ matrix.qgis-tags }}
     strategy:
       matrix:
-        qgis-tags: [ release-3_34, "3.40", "3.44", latest ]
+        qgis-tags: [ release-3_34, "3.40", "3.44", "4.0-trixie", latest ]
       fail-fast: false
 
     steps:
