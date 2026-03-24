@@ -104,10 +104,10 @@ markers can be used.
 ### Custom QGIS settings
 
 When running tests, a directory named `.qgis-settings` will be created
-containings all QGIS default profile as well as QGIS settings.  
+containings all QGIS default profile as well as QGIS settings.
 Most of the time you can ignore this repository, but it may be useful for inspecting created default settings.
 
-You may define custom settings to be loaded at startup: in your 
+You may define custom settings to be loaded at startup: in your
 root tests directory, create a file `qgis_settings.ini` containing all your default QGIS3 settings: this file will be used as the default settings for
 the QGIS tests session.
 
