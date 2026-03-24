@@ -1,5 +1,8 @@
 # Unreleased
 
+## Fixes
+
+* Use correct modality enum in qgis_show_map marker
 
 # Version 3.0.0 (18-03-2026)
 
