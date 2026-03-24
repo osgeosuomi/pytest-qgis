@@ -395,7 +395,7 @@ def _configure_qgis_map(
         )
         message_box.addButton(QMessageBox.StandardButton.Close)
         message_box.move(QgsApplication.instance().primaryScreen().geometry().topLeft())
-        message_box.setWindowModality(QtCore.Qt.NonModal)
+        message_box.setWindowModality(QtCore.Qt.WindowModality.NonModal)
         message_box.show()
 
         t = time.time()
