@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from _pytest.fixtures import SubRequest
     from _pytest.mark import Mark
 
+QGIS_V4_INT = 40000
 
 LOGGER = logging.getLogger("QGIS")
 
@@ -68,6 +69,7 @@ Settings = namedtuple(
     [
         "gui_enabled",
         "qgis_init_disabled",
+        "qgis_exit_disabled",
         "qgis_server",
         "canvas_width",
         "canvas_height",
@@ -81,6 +83,10 @@ GUI_DISABLE_KEY = "qgis_disable_gui"
 GUI_ENABLED_KEY = "qgis_gui_enabled"
 GUI_DESCRIPTION = "Set whether the graphical user interface is wanted or not."
 GUI_ENABLED_DEFAULT = True
+
+EXIT_DISABLED_KEY = "qgis_disable_exit"
+EXIT_DISABLED_DEFAULT = False
+EXIT_DISABLED_DESCRIPTION = "Set wether exitQgis() is called at the end of the session"
 
 SERVER_KEY = "qgis_server"
 SERVER_DEFAULT = False
@@ -131,11 +137,21 @@ def pytest_addoption(parser: "Parser") -> None:
         action="store_true",
         help=DISABLE_QGIS_INIT_DESCRIPTION,
     )
+    group.addoption(
+        f"--{EXIT_DISABLED_KEY}",
+        action="store_true",
+        help=EXIT_DISABLED_DESCRIPTION,
+    )
 
     parser.addini(
         GUI_ENABLED_KEY, GUI_DESCRIPTION, type="bool", default=GUI_ENABLED_DEFAULT
     )
-
+    parser.addini(
+        EXIT_DISABLED_KEY,
+        EXIT_DISABLED_DESCRIPTION,
+        type="bool",
+        default=EXIT_DISABLED_DEFAULT,
+    )
     parser.addini(
         SERVER_KEY,
         "QGIS Server session",
@@ -192,8 +208,9 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
             if not sip.isdeleted(_CANVAS) and _CANVAS is not None:
                 _CANVAS.deleteLater()
 
-        # NOTE: this cause a core dump with qgis/qgis image
-        # _APP.exitQgis()
+        if not request.config._plugin_settings.qgis_exit_disabled:
+            LOGGER.debug("EXITING QGIS")
+            _APP.exitQgis()
 
 
 @pytest.fixture(scope="session")
@@ -215,7 +232,10 @@ def qgis_version() -> int:
 
 @pytest.fixture(scope="session")
 def qgis_iface() -> QgisInterfaceOrig:
-    assert _IFACE
+    # This is needed because qgis_iface
+    # is required in autouse=True fixture qgis_show_map
+    if not _QGIS_SERVER:
+        assert _IFACE
     return _IFACE
 
 
@@ -337,8 +357,15 @@ def _load_qgis_settings(config: "Config") -> None:
     if settings.exists():
         shutil.copyfile(settings, settings_file)
 
-    QSettings.setDefaultFormat(QSettings.IniFormat)
-    QSettings.setPath(QSettings.IniFormat, QSettings.UserScope, str(settings_path))
+    if Qgis.versionInt() < QGIS_V4_INT:
+        settings_format = QSettings.IniFormat
+        settings_scope = QSettings.UserScope
+    else:
+        settings_format = QSettings.Format.IniFormat
+        settings_scope = QSettings.Scope.UserScope
+
+    QSettings.setDefaultFormat(settings_format)
+    QSettings.setPath(settings_format, settings_scope, str(settings_path))
 
     qgssettings = QgsSettings()
     LOGGER.info("QGIS Settings loaded from %s", qgssettings.fileName())
@@ -410,8 +437,10 @@ def _init_qgis_plugins_path(qgis_app: QgsApplication) -> None:
         sys.path.append(python_plugins_path)
 
 
-def _initialize_processing(qgis_app: QgsApplication) -> None:
-    _init_qgis_plugins_path(qgis_app)
+def _initialize_processing(_qgis_app: QgsApplication) -> None:
+    # Keep the unused arguments explicit because in will require
+    # QgsApplication to be initialized instead of assuming it
+    # implicitely.
     from processing.core.Processing import Processing  # noqa: PLC0415
 
     Processing.initialize()
@@ -513,12 +542,17 @@ def _parse_settings(config: "Config") -> Settings:
 
     qgis_init_disabled = config.getoption(DISABLE_QGIS_INIT_KEY)
 
+    qgis_exit_disabled = config.getoption(EXIT_DISABLED_KEY)
+    if not qgis_exit_disabled:
+        qgis_exit_disabled = config.getini(EXIT_DISABLED_KEY)
+
     canvas_width = int(config.getini(CANVAS_WIDTH_KEY))
     canvas_height = int(config.getini(CANVAS_HEIGHT_KEY))
 
     return Settings(
         gui_enabled,
         qgis_init_disabled,
+        qgis_exit_disabled,
         qgis_server,
         canvas_width,
         canvas_height,
