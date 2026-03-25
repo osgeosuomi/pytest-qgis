@@ -1,5 +1,13 @@
 # Unreleased
 
+## New Features
+
+* Add support for testing QGIS server plugins [#81](https://github.com/osgeosuomi/pytest-qgis/pull/81)
+* Add cli and ini option to prevent QGIS from exiting in teardown [#81](https://github.com/osgeosuomi/pytest-qgis/pull/81)
+
+## API Breaks
+
+* Fix typo in ini config: qgis_disable_qui -> qgis_disable_gui
 
 # Version 3.0.1 (24-03-2026)
 

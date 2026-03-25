@@ -92,6 +92,7 @@ markers can be used.
 * `--qgis_disable_gui` can be used to disable graphical user interface in tests. This speeds up the tests that use Qt
   widgets of the plugin.
 * `--qgis_disable_init` can be used to prevent QGIS (QgsApplication) from initializing. Mainly used in internal testing.
+* `--qgis_disable_exit` can be used to prevent QGIS (QgsApplication) from exiting in teardown. This might be useful if C++ errors occur.
 
 ### ini-options
 
@@ -100,6 +101,7 @@ markers can be used.
 * `qgis_canvas_width` width of the QGIS canvas in pixels. Defaults to 600.
 * `qgis_canvas_height` height of the QGIS canvas in pixels. Defaults to 600.
 * `qgis_server` support qgis server only plugin testing. This prevent initializing qgis interface and allow instanciating QgsServer() safely.
+* `qgis_disable_exit` whether to disable QGIS (QgsApplication) from exiting in teardown. This might be useful if C++ errors occur.
 
 ### Custom QGIS settings
 
