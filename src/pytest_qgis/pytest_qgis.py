@@ -344,11 +344,13 @@ def _load_qgis_settings(config: "Config") -> None:
     os.environ["QGIS_CUSTOM_CONFIG_PATH"] = str(path)
     os.environ["QGIS_OPTIONS_PATH"] = str(path)
 
+    qgis_ini_file = "QGIS3.ini" if _QGIS_VERSION < QGIS_V4_INT else "QGIS4.ini"
+
     settings_path = path.joinpath("profiles", "default")
     # Copy the ini file at correct location
     settings_file = settings_path.joinpath(
         QgsApplication.QGIS_ORGANIZATION_NAME,
-        "QGIS3.ini",
+        qgis_ini_file,
     )
     settings_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -357,7 +359,7 @@ def _load_qgis_settings(config: "Config") -> None:
     if settings.exists():
         shutil.copyfile(settings, settings_file)
 
-    if Qgis.versionInt() < QGIS_V4_INT:
+    if _QGIS_VERSION < QGIS_V4_INT:
         settings_format = QSettings.IniFormat
         settings_scope = QSettings.UserScope
     else:
