@@ -16,16 +16,13 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Install venv
-        run: |
-          apt update
-          apt install -y python3-venv curl
+      - uses: actions/checkout@v6
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57
       - name: Create virtualenv and install dependencies
         run: |
-          python3 -m venv --system-site-packages .venv
-          .venv/bin/pip3 install -q -U uv
-          .venv/bin/uv sync --locked
+          uv venv --system-site-packages
+          uv sync --locked
       - name: Run tests
         env:
           QGIS_IN_CI: 1
