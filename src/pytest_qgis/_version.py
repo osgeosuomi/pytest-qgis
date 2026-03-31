@@ -16,5 +16,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 
+from importlib import metadata
 
-__version__ = "4.0.0.post0"
+__version__ = metadata.version(__package__)
