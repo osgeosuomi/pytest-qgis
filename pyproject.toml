@@ -1,9 +1,6 @@
-[build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
-
 [project]
 name = "pytest-qgis"
+version = "4.0.0.post0"
 authors = [
     { name = "Gispo Ltd.", email = "info@gispo.fi" },
     { name = "OSGeo Suomi", email = "info@osgeo.fi" },
@@ -13,7 +10,6 @@ maintainers = [{ name = "OSGeo Suomi", email = "info@osgeo.fi" }]
 description = "A pytest plugin for testing QGIS python plugins"
 readme = "README.md"
 
-dynamic = ["version"]
 keywords = ["pytest", "qgis", "QGIS", "PyQGIS"]
 
 requires-python = ">=3.10"
@@ -42,6 +38,15 @@ homepage = "https://github.com/osgeosuomi/pytest-qgis"
 repository = "https://github.com/osgeosuomi/pytest-qgis"
 changelog = "https://github.com/osgeosuomi/pytest-qgis/blob/main/CHANGELOG.md"
 
+
+[build-system]
+requires = ["uv_build>=0.11.2,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "pytest_qgis"
+include = ["py.typed"]
+
 [project.entry-points.pytest11]
 pytest_qgis = "pytest_qgis"
 
@@ -68,16 +73,6 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.dynamic]
-version = { attr = "pytest_qgis._version.__version__" }
-
-[tool.setuptools.package-data]
-pytest_qgis = ["py.typed"]
-
 
 [tool.pytest.ini_options]
 doctest_encoding = "utf-8"
