@@ -1,5 +1,9 @@
 # Unreleased
 
+## Fixes
+
+* Fix QGIS 4 ini file name [#83](https://github.com/osgeosuomi/pytest-qgis/pull/83)
+
 # Version 4.0.0 (25-03-2026)
 
 ## New Features
