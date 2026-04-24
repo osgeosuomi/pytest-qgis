@@ -1,5 +1,24 @@
 # Unreleased
 
+## New Features
+
+* Add `qgis_message_log` fixture that captures `QgsMessageLog.logMessage`
+  calls during a test.  The fixture yields a `MessageLogCapture` with
+  `.entries`, `.infos`/`.warnings`/`.errors`, and a `find(text, level=...)`
+  helper for asserting on plugin log output.
+* Add `pytest_qgis.utils.run_task(task, timeout_ms=30_000)` — a
+  synchronous runner for `QgsTask` subclasses.  Lets you unit-test task
+  subclasses without spinning up `QgsTaskManager`.
+* Add `pytest_qgis.utils.wait_signal(signal, timeout_ms=1_000, check=None)`
+  context manager that blocks until a PyQt signal fires, optionally
+  gated by a predicate.  Useful for testing async Qt flows.
+* Add `pytest_qgis.utils.make_memory_layer(features, fields=None, crs=...)`
+  convenience builder that takes a list of WKT strings (or
+  `(wkt, attrs)` tuples) and returns a fully-populated
+  `QgsVectorLayer`.  Auto-detects geometry type from the first WKT
+  prefix; infers field types from the first attribute dict when
+  `fields` is omitted.
+
 # Version 4.0.1 (01-04-2026)
 
 ## Fixes

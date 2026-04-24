@@ -30,6 +30,66 @@ This plugin makes it easier to write QGIS plugin tests with the help of some fix
 * `qgis_version` returns QGIS version number as integer.
 * `qgis_world_map_geopackage` returns Path to the world_map.gpkg that ships with QGIS
 * `qgis_countries_layer` returns Natural Earth countries layer from world.map.gpkg as QgsVectorLayer
+* `qgis_message_log` captures every `QgsMessageLog.logMessage` call during the
+  test.  Yields a `MessageLogCapture` whose `.entries`,
+  `.infos` / `.warnings` / `.errors`, and `find(text, level=...)` helpers
+  make it easy to assert on plugin log output:
+
+  ```python
+  from qgis.core import Qgis, QgsMessageLog
+
+  def test_plugin_warns_on_empty_data(qgis_message_log):
+      my_plugin.process_empty()
+      assert qgis_message_log.find('No data', level=Qgis.Warning) is not None
+      assert len(qgis_message_log.errors) == 0
+  ```
+
+### Utility helpers
+
+These live under `pytest_qgis.utils` and can be imported directly:
+
+* `run_task(task, *, timeout_ms=30_000)` — run a `QgsTask` subclass
+  synchronously for unit tests (no task manager needed).  Returns
+  the task's `run()` result:
+
+  ```python
+  from pytest_qgis.utils import run_task
+
+  def test_my_task(qgis_app):
+      task = MyTask("desc")
+      assert run_task(task) is True
+      assert task.result_value == 42
+  ```
+
+* `wait_signal(signal, *, timeout_ms=1_000, check=None)` — context
+  manager that blocks until a PyQt signal fires, optionally filtered
+  by a predicate.  Useful for async Qt flows:
+
+  ```python
+  from pytest_qgis.utils import wait_signal
+
+  def test_async_task(qgis_app):
+      task = SlowTask()
+      with wait_signal(task.finished, timeout_ms=500) as w:
+          QgsApplication.taskManager().addTask(task)
+      assert w.triggered, 'task did not finish within 500 ms'
+  ```
+
+* `make_memory_layer(features, *, fields=None, crs='EPSG:4326', name='memory')`
+  — one-line memory-layer builder.  Pass a list of WKT strings or
+  `(wkt, attrs)` tuples and get back a valid `QgsVectorLayer`.  The
+  geometry kind is inferred from the first WKT's prefix and field
+  schemas are inferred from the first attribute dict:
+
+  ```python
+  from pytest_qgis.utils import make_memory_layer
+
+  layer = make_memory_layer([
+      ('POINT(14 55)', {'name': 'harbour', 'depth': 7.5}),
+      ('POINT(15 56)', {'name': 'wreck',   'depth': 18.0}),
+  ], crs='EPSG:4326')
+  assert layer.featureCount() == 2
+  ```
 
 ### Markers
 
