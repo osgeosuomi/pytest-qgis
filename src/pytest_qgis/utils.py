@@ -22,7 +22,7 @@ from collections import Counter
 from collections.abc import Callable, Generator, Iterator, Mapping, Sequence
 from functools import wraps
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
 
 from osgeo import gdal
@@ -31,8 +31,8 @@ from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
     QgsFeature,
-    QgsGeometry,
     QgsField,
+    QgsGeometry,
     QgsLayerTree,
     QgsLayerTreeGroup,
     QgsLayerTreeLayer,
@@ -355,10 +355,8 @@ def run_task(
         if status in done_statuses or task.isCanceled():
             break
     # finalize hook so any cleanup logic runs on the main thread
-    try:
+    with contextlib.suppress(Exception):
         task.finished(result)
-    except Exception:
-        pass
     return bool(result)
 
 
@@ -400,16 +398,20 @@ class _SignalWaiter:
         self._signal.connect(self._on_signal)
         return self
 
-    def __exit__(self, exc_type, exc, tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: object,
+    ) -> None:
         try:
             if exc_type is None and not self.triggered:
                 QTimer.singleShot(self._timeout_ms, self._on_timeout)
                 self._loop.exec()
         finally:
-            try:
+            with contextlib.suppress(TypeError):
+                # already disconnected
                 self._signal.disconnect(self._on_signal)
-            except TypeError:
-                pass  # already disconnected
 
 
 def wait_signal(
@@ -445,11 +447,8 @@ def wait_signal(
 # ---------------------------------------------------------------------------
 
 
-class MessageLogEntry(
-    # Using tuple[str, str, int] via a lightweight namedtuple-ish class
-    # keeps the API usable without an extra dependency on dataclasses.
-):
-    __slots__ = ("message", "tag", "level")
+class MessageLogEntry:
+    __slots__ = ("level", "message", "tag")
 
     def __init__(self, message: str, tag: str, level: int) -> None:
         self.message = message
@@ -463,7 +462,9 @@ class MessageLogEntry(
             Qgis.Critical: "Critical",
             Qgis.Success: "Success",
         }.get(self.level, str(self.level))
-        return f"MessageLogEntry({lvl_name}, tag={self.tag!r}, message={self.message!r})"
+        return (
+            f"MessageLogEntry({lvl_name}, tag={self.tag!r}, message={self.message!r})"
+        )
 
     def __iter__(self) -> Iterator[Any]:
         # Allow tuple-style unpacking: message, tag, level = entry
@@ -497,22 +498,18 @@ class MessageLogCapture:
         self.entries.append(MessageLogEntry(message, tag, level))
         # Delegate to the original so the real logger still does its thing.
         if self._original is not None:
-            try:
+            with contextlib.suppress(
+                Exception
+            ):  # pragma: no cover - never mask test state
                 self._original(message, tag, level)
-            except Exception:  # pragma: no cover - never mask test state
-                pass
 
     def connect(self) -> None:
-        from qgis.core import QgsMessageLog  # noqa: PLC0415 - avoid top-level hit
-
         if self._original is not None:
             return  # already connected
         self._original = QgsMessageLog.logMessage
         QgsMessageLog.logMessage = staticmethod(self._wrap_log_message)
 
     def disconnect(self) -> None:
-        from qgis.core import QgsMessageLog  # noqa: PLC0415
-
         if self._original is None:
             return
         QgsMessageLog.logMessage = staticmethod(self._original)
@@ -558,7 +555,7 @@ class MessageLogCapture:
         self.entries.clear()
 
 
-def _get_qgs_application():
+def _get_qgs_application() -> type:
     """Internal helper -- avoids a top-level import cycle."""
     from qgis.core import QgsApplication as _QgsApplication  # noqa: PLC0415
 
@@ -589,16 +586,61 @@ def _infer_geometry_kind(sample: str) -> str:
     return _GEOMETRY_KIND_BY_WKT_PREFIX[prefix]
 
 
+# Field types are kept as QVariant constants so pytest-qgis stays compatible
+# with both QGIS 3 (Qt5/QVariant) and QGIS 4 (Qt6/QMetaType — QVariant.* still
+# resolves to the same numeric values).  See flake8-qgis QGS402.
 _PYTHON_TYPE_TO_QVARIANT: Mapping[type, Any] = {
-    int: QVariant.Int,
-    float: QVariant.Double,
-    str: QVariant.String,
-    bool: QVariant.Bool,
+    int: QVariant.Int,  # noqa: QGS402
+    float: QVariant.Double,  # noqa: QGS402
+    str: QVariant.String,  # noqa: QGS402
+    bool: QVariant.Bool,  # noqa: QGS402
 }
 
 
+def _normalise_features(
+    features: Sequence[str | tuple[str, Mapping[str, Any]]],
+) -> list[tuple[str, dict[str, Any]]]:
+    normalised: list[tuple[str, dict[str, Any]]] = []
+    for item in features:
+        if isinstance(item, str):
+            normalised.append((item, {}))
+        else:
+            wkt, attrs = item
+            normalised.append((wkt, dict(attrs)))
+    return normalised
+
+
+def _build_qgs_fields(fields: Mapping[str, type]) -> list[QgsField]:
+    qgs_fields: list[QgsField] = []
+    for fname, fpy_type in fields.items():
+        qvariant = _PYTHON_TYPE_TO_QVARIANT.get(fpy_type)
+        if qvariant is None:
+            raise TypeError(
+                f"Field {fname!r}: unsupported type {fpy_type!r}. "
+                f"Supported: {sorted(t.__name__ for t in _PYTHON_TYPE_TO_QVARIANT)}"
+            )
+        qgs_fields.append(QgsField(fname, qvariant))
+    return qgs_fields
+
+
+def _make_feature(
+    layer: QgsVectorLayer,
+    wkt: str,
+    attrs: Mapping[str, Any],
+    field_names: Sequence[str],
+) -> QgsFeature:
+    geom = QgsGeometry.fromWkt(wkt)
+    if geom.isEmpty():
+        raise ValueError(f"Could not parse WKT: {wkt!r}")
+    feat = QgsFeature(layer.fields())
+    feat.setGeometry(geom)
+    for fname in field_names:
+        feat.setAttribute(fname, attrs.get(fname))
+    return feat
+
+
 def make_memory_layer(
-    features: Sequence[Union[str, tuple[str, Mapping[str, Any]]]],
+    features: Sequence[str | tuple[str, Mapping[str, Any]]],
     *,
     fields: Mapping[str, type] | None = None,
     crs: str = "EPSG:4326",
@@ -636,57 +678,29 @@ def make_memory_layer(
     if not features:
         raise ValueError("features must be a non-empty sequence")
 
-    # Normalise input to (wkt, attrs) pairs and infer schema.
-    normalised: list[tuple[str, dict[str, Any]]] = []
-    for item in features:
-        if isinstance(item, str):
-            normalised.append((item, {}))
-        else:
-            wkt, attrs = item
-            normalised.append((wkt, dict(attrs)))
-
+    normalised = _normalise_features(features)
     if geometry_kind is None:
         geometry_kind = _infer_geometry_kind(normalised[0][0])
-
     if fields is None:
-        first_attrs = normalised[0][1]
-        fields = {k: type(v) for k, v in first_attrs.items()}
+        fields = {k: type(v) for k, v in normalised[0][1].items()}
 
-    # Create the layer.
-    layer = QgsVectorLayer(
-        f"{geometry_kind}?crs={crs}", name, "memory"
-    )
+    layer = QgsVectorLayer(f"{geometry_kind}?crs={crs}", name, "memory")
     if not layer.isValid():
         raise RuntimeError(
             f"Failed to construct memory layer (geom={geometry_kind}, crs={crs})"
         )
     pr = layer.dataProvider()
 
-    # Schema.
-    qgs_fields: list[QgsField] = []
-    for fname, fpy_type in fields.items():
-        qvariant = _PYTHON_TYPE_TO_QVARIANT.get(fpy_type)
-        if qvariant is None:
-            raise TypeError(
-                f"Field {fname!r}: unsupported type {fpy_type!r}. "
-                f"Supported: {sorted(t.__name__ for t in _PYTHON_TYPE_TO_QVARIANT)}"
-            )
-        qgs_fields.append(QgsField(fname, qvariant))
-    if qgs_fields:
-        pr.addAttributes(qgs_fields)
-        layer.updateFields()
+    qgs_fields = _build_qgs_fields(fields)
+    if qgs_fields and not pr.addAttributes(qgs_fields):
+        raise RuntimeError(f"Failed to add attributes to memory layer: {qgs_fields!r}")
+    layer.updateFields()
 
-    # Features.
     field_names = list(fields.keys())
     for wkt, attrs in normalised:
-        geom = QgsGeometry.fromWkt(wkt)
-        if geom.isEmpty():
-            raise ValueError(f"Could not parse WKT: {wkt!r}")
-        feat = QgsFeature(layer.fields())
-        feat.setGeometry(geom)
-        for fname in field_names:
-            feat.setAttribute(fname, attrs.get(fname))
-        pr.addFeature(feat)
+        feat = _make_feature(layer, wkt, attrs, field_names)
+        if not pr.addFeature(feat):
+            raise RuntimeError(f"Failed to add feature to memory layer: {wkt!r}")
 
     layer.updateExtents()
     return layer

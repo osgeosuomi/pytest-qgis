@@ -24,6 +24,7 @@ import sys
 import time
 import warnings
 from collections import namedtuple
+from collections.abc import Generator
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest import mock
@@ -48,15 +49,11 @@ from pytest_qgis.qgis_bot import QgisBot
 from pytest_qgis.qgis_interface import QgisInterface
 from pytest_qgis.utils import (
     MessageLogCapture,
-    MessageLogEntry,
     ensure_qgis_layer_fixtures_are_cleaned,
     get_common_extent_from_all_layers,
     get_layers_with_different_crs,
-    make_memory_layer,
     replace_layers_with_reprojected_clones,
-    run_task,
     set_map_crs_based_on_layers,
-    wait_signal,
 )
 
 if TYPE_CHECKING:
@@ -299,7 +296,9 @@ def qgis_bot(qgis_iface: QgisInterface) -> QgisBot:
 
 
 @pytest.fixture
-def qgis_message_log(qgis_app: QgsApplication):  # noqa: ARG001
+def qgis_message_log(
+    qgis_app: QgsApplication,  # noqa: ARG001
+) -> Generator[MessageLogCapture, None, None]:
     """
     Capture ``QgsMessageLog.logMessage`` emissions for the duration of
     a test.
