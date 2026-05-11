@@ -159,7 +159,9 @@ $ pre-commit install
 
 ## Contributing
 
-Contributions are very welcome.
+Contributions are very welcome. Get started by reading OSGeo
+Suomi [CONTRIBUTING guidelines](https://github.com/osgeosuomi/.github/blob/main/CONTRIBUTING.md).
+
 
 ## License
 
