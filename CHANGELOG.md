@@ -1,5 +1,10 @@
 # Unreleased
 
+## Fixes
+
+* Fix `QgisBot.get_qgs_attribute_dialog_widgets_by_name` returning an empty
+  dict on QGIS 4.1+
+
 # Version 4.0.1 (01-04-2026)
 
 ## Fixes
