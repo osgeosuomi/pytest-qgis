@@ -161,7 +161,6 @@ class QgisBot:
             if (
                 isinstance(child, QLabel)
                 and child.text() != ""
-                and child.toolTip() != ""
                 and child.buddy() is not None
             ):
                 widgets_by_name[child.text()] = child.buddy()
