@@ -24,6 +24,7 @@ import sys
 import time
 import warnings
 from collections import namedtuple
+from collections.abc import Generator
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest import mock
@@ -47,6 +48,7 @@ from pytest_qgis.mock_qgis_classes import MockMessageBar
 from pytest_qgis.qgis_bot import QgisBot
 from pytest_qgis.qgis_interface import QgisInterface
 from pytest_qgis.utils import (
+    MessageLogCapture,
     ensure_qgis_layer_fixtures_are_cleaned,
     get_common_extent_from_all_layers,
     get_layers_with_different_crs,
@@ -291,6 +293,33 @@ def qgis_bot(qgis_iface: QgisInterface) -> QgisBot:
     Object that holds common utility methods for interacting with QGIS.
     """
     return QgisBot(qgis_iface)
+
+
+@pytest.fixture
+def qgis_message_log(
+    qgis_app: QgsApplication,  # noqa: ARG001
+) -> Generator[MessageLogCapture, None, None]:
+    """
+    Capture ``QgsMessageLog.logMessage`` emissions for the duration of
+    a test.
+
+    Yields a :class:`MessageLogCapture` whose ``.entries`` list holds
+    every captured ``(message, tag, level)``.  Helpers ``.warnings`` /
+    ``.errors`` / ``.infos`` filter by level; ``.find(text, level=...)``
+    returns the first entry whose message contains ``text``.
+
+    Example::
+
+        def test_plugin_warns_on_empty_data(qgis_message_log):
+            my_plugin.process_empty()
+            assert qgis_message_log.find('No data', level=Qgis.Warning)
+    """
+    capture = MessageLogCapture()
+    capture.connect()
+    try:
+        yield capture
+    finally:
+        capture.disconnect()
 
 
 @pytest.fixture(autouse=True)
