@@ -30,6 +30,13 @@ jobs:
           xvfb-run -s '+extension GLX -screen 0 1024x768x24'
           .venv/bin/pytest -v --cov src/pytest_qgis --cov-report=xml -m 'not with_pytest_qt' -p no:pytest-qt tests
 
+      - name: Run tests in parallel (pytest-xdist smoke test)
+        env:
+          QGIS_IN_CI: 1
+        run: >
+          xvfb-run -s '+extension GLX -screen 0 1024x768x24'
+          .venv/bin/pytest -v -n 2 -m 'not with_pytest_qt' -p no:pytest-qt --ignore tests/visual tests
+
       # Upload coverage report. Will not work if the repo is private
       - name: Upload coverage to Codecov
         if: ${{ matrix.qgis-tags == 'latest' && !github.event.repository.private }}

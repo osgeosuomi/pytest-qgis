@@ -121,7 +121,8 @@ the QGIS tests session.
 Queued and cross-thread signal deliveries require the receiving thread to
 process its event queue. pytest-qgis handles this automatically:
 
-* `QgsApplication` is initialized for every test process.
+* `QgsApplication` is initialized for every test process, including every
+  [pytest-xdist](#pytest-xdist) worker.
 * Queued events and deferred deletions (`deleteLater`) are flushed after
   each test.
 * `wait` in `pytest_qgis.utils` runs a real event loop for the given
@@ -133,6 +134,13 @@ event loop. `QThread`'s default `run()` implementation provides one.
 > **Note:** Decorate slots with `@pyqtSlot()` (or connect only after
 > `moveToThread`), otherwise PyQt may run the slot in the thread where the
 > connection was made.
+
+### pytest-xdist
+
+Tests can be run in parallel with
+[pytest-xdist](https://pypi.org/project/pytest-xdist/) (`pytest -n auto`)
+without configuration: each worker gets its own `QgsApplication` and
+settings directory (`.qgis-settings/<worker_id>`).
 
 
 ## QgisBot
