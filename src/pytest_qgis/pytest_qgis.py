@@ -124,6 +124,7 @@ _PARENT: QtWidgets.QWidget | None = None
 _AUTOUSE_QGIS: bool | None = None
 
 _QGIS_SERVER: bool = False
+_LEGEND_LAYERS_CONNECTED: bool = False
 
 try:
     _QGIS_VERSION = Qgis.versionInt()
@@ -209,12 +210,14 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
     yield _APP if not request.config._plugin_settings.qgis_init_disabled else None
 
     if not request.config._plugin_settings.qgis_init_disabled:
+        global _LEGEND_LAYERS_CONNECTED  # noqa: PLW0603
         assert _APP
 
         if not request.config._plugin_settings.qgis_server:
-            # TODO: investigate why legendLayersAdded is sometimes not connected
-            with contextlib.suppress(TypeError):
-                QgsProject.instance().legendLayersAdded.disconnect(_APP.processEvents)
+            if _LEGEND_LAYERS_CONNECTED:
+                with contextlib.suppress(TypeError):
+                    QgsProject.instance().legendLayersAdded.disconnect(process_events)
+                _LEGEND_LAYERS_CONNECTED = False
             if not sip.isdeleted(_CANVAS) and _CANVAS is not None:
                 _CANVAS.deleteLater()
                 # Deliver the deferred delete before exitQgis
@@ -386,7 +389,7 @@ def _load_qgis_settings(config: "Config") -> None:
 
 
 def _start_and_configure_qgis_app(config: "Config") -> None:
-    global _APP, _CANVAS, _IFACE, _PARENT  # noqa: PLW0603
+    global _APP, _CANVAS, _IFACE, _PARENT, _LEGEND_LAYERS_CONNECTED  # noqa: PLW0603
     settings: Settings = config._plugin_settings
 
     # From qgis server
@@ -437,7 +440,8 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
             # and this might change the extent unexpectedly.
             # It is better to process events right after adding the
             # layer to avoid these kind of problems.
-            QgsProject.instance().legendLayersAdded.connect(_APP.processEvents)
+            QgsProject.instance().legendLayersAdded.connect(process_events)
+            _LEGEND_LAYERS_CONNECTED = True
 
     if _APP is not None:
         # Initialize plugin_path is all cases
