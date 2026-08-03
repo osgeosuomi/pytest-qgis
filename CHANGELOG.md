@@ -1,7 +1,27 @@
 # Unreleased
 
+## New Features
+
+* Add support for running tests in parallel with pytest-xdist: each worker
+  process gets its own `QgsApplication` and settings directory
+  (`.qgis-settings/<worker_id>`)
+* Add `process_events` utility function that delivers all pending queued
+  events and deferred deletions
+* Add `wait_until` utility function that runs an event loop until a condition
+  becomes true or a timeout is reached
+
+## Changes
+
+* `utils.wait` now runs a real event loop instead of busy-waiting with
+  `processEvents`, and delivers deferred deletions (`deleteLater`) at the end.
+  `wait(0)` used to be a no-op; it now flushes all pending events immediately.
+* Pending queued events and deferred deletions are flushed automatically after
+  each test, so events from one test can no longer fire during a later test
+
 ## Fixes
 
+* Fix unreliable `legendLayersAdded` signal disconnection in session teardown
+  by tracking the connection state
 * Fix `QgisBot.get_qgs_attribute_dialog_widgets_by_name` returning an empty
   dict on QGIS 4.1+
 

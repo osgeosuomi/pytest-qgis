@@ -61,6 +61,9 @@ markers can be used.
 
 ### Utility tools
 
+* `wait` and `wait_until` functions in `pytest_qgis.utils` can be used to wait certain time or until a condition is met. `wait` runs a real event loop for the given
+  milliseconds. If you use [pytest-qt](https://pytest-qt.readthedocs.io/), its `qtbot.wait`, `qtbot.waitUntil` and
+  `qtbot.waitSignal` offer similar functionality.
 * `clean_qgis_layer` decorator found in `pytest_qgis.utils` can be used with `QgsMapLayer` fixtures to ensure that they
   are cleaned properly if they are used but not added to the `QgsProject`. This is only needed with layers with other than memory provider.
 
@@ -113,6 +116,23 @@ You may define custom settings to be loaded at startup: in your
 root tests directory, create a file `qgis_settings.ini` containing all your default QGIS3 settings: this file will be used as the default settings for
 the QGIS tests session.
 
+### Event loop and threads
+
+Queued and cross-thread signal deliveries require the receiving thread to
+process its event queue. pytest-qgis handles this automatically:
+
+* `QgsApplication` is initialized for every test process.
+* Queued events and deferred deletions (`deleteLater`) are flushed after
+  each test.
+* `wait` in `pytest_qgis.utils` runs a real event loop for the given
+  milliseconds.
+
+Signals between objects living in a `QThread` require the thread to run an
+event loop. `QThread`'s default `run()` implementation provides one.
+
+> **Note:** Decorate slots with `@pyqtSlot()` (or connect only after
+> `moveToThread`), otherwise PyQt may run the slot in the thread where the
+> connection was made.
 
 
 ## QgisBot
