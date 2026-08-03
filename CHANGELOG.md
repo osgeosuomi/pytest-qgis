@@ -2,9 +2,7 @@
 
 ## New Features
 
-* Add support for running tests in parallel with pytest-xdist: each worker
-  process gets its own `QgsApplication` and settings directory
-  (`.qgis-settings/<worker_id>`)
+* Ensure each worker process to get its own `QgsApplication` and settings directory
 * Add `process_events` utility function that delivers all pending queued
   events and deferred deletions
 * Add `wait_until` utility function that runs an event loop until a condition

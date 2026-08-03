@@ -55,6 +55,7 @@ development = [
     "pytest",
     "pytest-cov",
     "pytest-qt",
+    "pytest-xdist",
 
     # Linting
     "flake8",

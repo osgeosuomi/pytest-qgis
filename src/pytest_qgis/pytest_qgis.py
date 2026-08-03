@@ -188,6 +188,10 @@ def pytest_configure(config: "Config") -> None:
     settings = _parse_settings(config)
     config._plugin_settings = settings
 
+    if _is_xdist_controller(config):
+        # The controller runs no tests; each worker gets its own app
+        return
+
     if not settings.gui_enabled:
         os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
@@ -352,9 +356,29 @@ def qgis_show_map(
         )
 
 
+def _get_xdist_worker_id(config: "Config") -> str | None:
+    """Worker id, or None outside xdist workers. Avoids importing xdist."""
+    workerinput = getattr(config, "workerinput", None)
+    if workerinput is not None:
+        return workerinput.get("workerid")
+    return os.environ.get("PYTEST_XDIST_WORKER")
+
+
+def _is_xdist_controller(config: "Config") -> bool:
+    """Check if this is the pytest-xdist controller process."""
+    return _get_xdist_worker_id(config) is None and config.getoption(
+        "dist", "no"
+    ) not in ("no", None)
+
+
 def _load_qgis_settings(config: "Config") -> None:
     rootdir = config.rootpath
     path = rootdir.joinpath(".qgis-settings")
+
+    # Separate settings directory per xdist worker
+    worker_id = _get_xdist_worker_id(config)
+    if worker_id is not None:
+        path = path.joinpath(worker_id)
 
     os.environ["QGIS_CUSTOM_CONFIG_PATH"] = str(path)
     os.environ["QGIS_OPTIONS_PATH"] = str(path)
