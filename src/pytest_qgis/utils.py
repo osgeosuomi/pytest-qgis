@@ -16,7 +16,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 #
-import time
 from collections import Counter
 from collections.abc import Callable, Generator
 from functools import wraps
@@ -39,7 +38,7 @@ from qgis.core import (
     QgsVectorLayer,
 )
 from qgis.PyQt import sip
-from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QCoreApplication, QEvent, QEventLoop, QTimer
 
 if TYPE_CHECKING:
     from _pytest.fixtures import FixtureRequest
@@ -261,9 +260,58 @@ def _set_layer_owner_to_project(layer: Any) -> None:
         QgsProject.instance().removeMapLayer(layer)
 
 
-def wait(wait_time_milliseconds: int = 0) -> None:
-    """Waits for wait_time ms."""
-    start = time.time()
+def process_events() -> None:
+    """Deliver pending queued events and deferred deletions (deleteLater)."""
+    QCoreApplication.processEvents(QEventLoop.ProcessEventsFlag.AllEvents)
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
-    while (time.time() - start) * 1000 < wait_time_milliseconds:
-        QCoreApplication.processEvents()
+
+def wait(wait_time_milliseconds: int = 0) -> None:
+    """Run an event loop for the given time. wait(0) just flushes events."""
+    if wait_time_milliseconds <= 0:
+        process_events()
+        return
+
+    loop = QEventLoop()
+    QTimer.singleShot(wait_time_milliseconds, loop.quit)
+    loop.exec()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+def wait_until(
+    condition: Callable[[], bool],
+    *,
+    timeout_milliseconds: int = 5000,
+    interval_milliseconds: int = 10,
+) -> bool:
+    """Run an event loop until condition() is true or timeout is reached."""
+    if condition():
+        return True
+
+    loop = QEventLoop()
+    timed_out = False
+
+    def _on_timeout() -> None:
+        nonlocal timed_out
+        timed_out = True
+        loop.quit()
+
+    poll_timer = QTimer()
+    poll_timer.setInterval(interval_milliseconds)
+    poll_timer.timeout.connect(
+        lambda: loop.quit() if condition() else None,
+    )
+    timeout_timer = QTimer()
+    timeout_timer.setSingleShot(True)
+    timeout_timer.setInterval(timeout_milliseconds)
+    timeout_timer.timeout.connect(_on_timeout)
+
+    poll_timer.start()
+    timeout_timer.start()
+    try:
+        loop.exec()
+    finally:
+        poll_timer.stop()
+        timeout_timer.stop()
+
+    return not timed_out and condition()

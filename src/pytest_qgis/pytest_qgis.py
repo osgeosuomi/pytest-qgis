@@ -21,7 +21,6 @@ import logging
 import os.path
 import shutil
 import sys
-import time
 import warnings
 from collections import namedtuple
 from pathlib import Path
@@ -40,7 +39,13 @@ from qgis.core import (
 from qgis.gui import QgisInterface as QgisInterfaceOrig
 from qgis.gui import QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapCanvas
 from qgis.PyQt import QtCore, QtWidgets, sip
-from qgis.PyQt.QtCore import QCoreApplication, QSettings, Qt
+from qgis.PyQt.QtCore import (
+    QCoreApplication,
+    QEventLoop,
+    QSettings,
+    Qt,
+    QTimer,
+)
 from qgis.PyQt.QtWidgets import QMainWindow, QMessageBox, QWidget
 
 from pytest_qgis.mock_qgis_classes import MockMessageBar
@@ -50,6 +55,7 @@ from pytest_qgis.utils import (
     ensure_qgis_layer_fixtures_are_cleaned,
     get_common_extent_from_all_layers,
     get_layers_with_different_crs,
+    process_events,
     replace_layers_with_reprojected_clones,
     set_map_crs_based_on_layers,
 )
@@ -193,6 +199,10 @@ def pytest_runtest_teardown(item: pytest.Item, nextitem: pytest.Item | None) -> 
     if request:
         ensure_qgis_layer_fixtures_are_cleaned(request)
 
+    # Flush queued events so they cannot fire during the next test
+    if QCoreApplication.instance() is not None:
+        process_events()
+
 
 @pytest.fixture(autouse=True, scope="session")
 def qgis_app(request: "SubRequest") -> QgsApplication:
@@ -207,6 +217,8 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
                 QgsProject.instance().legendLayersAdded.disconnect(_APP.processEvents)
             if not sip.isdeleted(_CANVAS) and _CANVAS is not None:
                 _CANVAS.deleteLater()
+                # Deliver the deferred delete before exitQgis
+                process_events()
 
         if not request.config._plugin_settings.qgis_exit_disabled:
             LOGGER.debug("EXITING QGIS")
@@ -392,7 +404,8 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
 
     platform = "server" if settings.qgis_server else None
 
-    if not settings.qgis_init_disabled:
+    # Reuse the singleton app if pytest_configure runs again (pytester)
+    if not settings.qgis_init_disabled and _APP is None:
         _APP = QgsApplication(
             [],
             GUIenabled=settings.gui_enabled,
@@ -520,9 +533,10 @@ def _configure_qgis_map(
         message_box.setWindowModality(QtCore.Qt.WindowModality.NonModal)
         message_box.show()
 
-        t = time.time()
-        while time.time() - t < settings.timeout and message_box.isVisible():
-            QCoreApplication.processEvents()
+        loop = QEventLoop()
+        QTimer.singleShot(round(settings.timeout * 1000), loop.quit)
+        message_box.finished.connect(loop.quit)
+        loop.exec()
     finally:
         message_box.close()
         qgis_parent.close()
