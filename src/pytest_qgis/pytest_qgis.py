@@ -23,6 +23,7 @@ import shutil
 import sys
 import warnings
 from collections import namedtuple
+from collections.abc import Generator
 from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest import mock
@@ -198,15 +199,25 @@ def pytest_configure(config: "Config") -> None:
     _start_and_configure_qgis_app(config)
 
 
-@pytest.hookimpl(tryfirst=True)
-def pytest_runtest_teardown(item: pytest.Item, nextitem: pytest.Item | None) -> None:  # noqa: ARG001
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_teardown(
+    item: pytest.Item,
+    nextitem: pytest.Item | None,
+) -> Generator[None, None, None]:
     request = item.funcargs.get("request")
     if request:
         ensure_qgis_layer_fixtures_are_cleaned(request)
 
-    # Flush queued events so they cannot fire during the next test
-    if QCoreApplication.instance() is not None:
-        process_events()
+    try:
+        yield
+    finally:
+        # Flush queued events after fixture finalizers have run so they
+        # cannot fire during the next test. This must happen after the
+        # finalizers since pytest-qt has already called deleteLater() on
+        # qtbot-added widgets, and delivering DeferredDelete any earlier
+        # would destroy widgets that finalizers may still touch.
+        if nextitem is not None and QCoreApplication.instance() is not None:
+            process_events()
 
 
 @pytest.fixture(autouse=True, scope="session")
