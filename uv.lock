@@ -561,7 +561,7 @@ wheels = [
 
 [[package]]
 name = "pytest-qgis"
-version = "4.1.0.post1"
+version = "4.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "pytest" },
