@@ -1,5 +1,8 @@
 # Unreleased
 
+## Fixes
+
+* Flush events only after fixture finalizers
 
 # Version 4.1.0 (04-08-2026)
 
