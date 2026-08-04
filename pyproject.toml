@@ -1,6 +1,6 @@
 [project]
 name = "pytest-qgis"
-version = "4.0.1.post1"
+version = "4.1.0"
 authors = [
     { name = "Gispo Ltd.", email = "info@gispo.fi" },
     { name = "OSGeo Suomi", email = "info@osgeo.fi" },
