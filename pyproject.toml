@@ -48,7 +48,7 @@ module-name = "pytest_qgis"
 include = ["py.typed"]
 
 [project.entry-points.pytest11]
-pytest_qgis = "pytest_qgis"
+pytest_qgis = "pytest_qgis.plugin"
 
 [dependency-groups]
 development = [
@@ -140,4 +140,11 @@ ban-relative-imports = "all"
     "ANN001",
     "ANN201",
     "PLR2004"
+]
+
+[tool.flake8]
+max-line-length = 88
+select = ["SC", "QGS"]
+per-file-ignores = [
+  "src/pytest_qgis/plugin.py:QGS105",
 ]
