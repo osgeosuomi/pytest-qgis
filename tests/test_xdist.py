@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from pytest_qgis.pytest_qgis import _get_xdist_worker_id, _is_xdist_controller
+from pytest_qgis.plugin import _get_xdist_worker_id, _is_xdist_controller
 
 if TYPE_CHECKING:
     from _pytest.pytester import Pytester

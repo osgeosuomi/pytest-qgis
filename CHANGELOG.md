@@ -4,6 +4,10 @@
 
 * Add support for processing plugins with QGIS >=4.3
 
+## Changes
+
+* The pytest plugin now lives in `pytest_qgis.plugin`. This might break some imports.
+
 # Version 4.1.1 (04-08-2026)
 
 ## Fixes

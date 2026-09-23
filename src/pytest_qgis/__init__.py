@@ -18,4 +18,3 @@
 
 
 from pytest_qgis._version import __version__  # noqa: F401
-from pytest_qgis.pytest_qgis import *  # noqa: F403

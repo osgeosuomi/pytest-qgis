@@ -1,4 +1,0 @@
-[flake8]
-select = QGS
-per-file-ignores =
-    src/pytest_qgis/pytest_qgis.py:QGS105
