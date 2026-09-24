@@ -19,6 +19,7 @@
 import pytest
 from qgis.core import QgsCoordinateReferenceSystem, QgsProject, QgsVectorLayer
 from qgis.PyQt import sip
+from tests.utils import EPSG_3067, EPSG_4326
 
 from pytest_qgis.utils import (
     clean_qgis_layer,
@@ -27,7 +28,6 @@ from pytest_qgis.utils import (
     replace_layers_with_reprojected_clones,
     set_map_crs_based_on_layers,
 )
-from tests.utils import EPSG_3067, EPSG_4326
 
 QGIS_3_12 = 31200
 
@@ -39,7 +39,7 @@ def _set_crs() -> None:
 
 @pytest.fixture
 def layers_added(
-    qgis_new_project,  # noqa: ARG001
+    qgis_new_project,
     layer_polygon,
     layer_polygon_3067,
     raster_3067,

@@ -19,7 +19,6 @@
 import pytest
 from qgis.gui import QgsAttributeDialog
 from qgis.PyQt import QtCore
-
 from tests.utils import IN_CI
 
 TIMEOUT = 10 if IN_CI else 1000

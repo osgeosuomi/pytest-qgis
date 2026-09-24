@@ -84,9 +84,7 @@ def transform_rectangle(
     in_crs: QgsCoordinateReferenceSystem,
     out_crs: QgsCoordinateReferenceSystem,
 ) -> QgsRectangle:
-    """
-    Transform rectangle from one crs to other.
-    """
+    """Transform rectangle from one crs to other."""
     if in_crs == out_crs:
         return rectangle
 
@@ -110,8 +108,7 @@ def get_layers_with_different_crs() -> list[QgsMapLayer]:
 def replace_layers_with_reprojected_clones(
     layers: list[QgsMapLayer], output_path: Path
 ) -> None:
-    """
-    For some reason all layers having differing crs from the project are invisible.
+    """For some reason all layers having differing crs from the project are invisible.
     Hotfix is to replace those by reprojected layers with map crs.
     """
     import processing  # noqa: PLC0415
@@ -166,9 +163,7 @@ def replace_layers_with_reprojected_clones(
 def copy_layer_style_and_position(
     layer1: QgsMapLayer, layer2: QgsMapLayer, tmp_path: Path
 ) -> None:
-    """
-    Copy layer style and position to another layer.
-    """
+    """Copy layer style and position to another layer."""
     style_file = str(Path(tmp_path, f"{layer1.id()}.qml"))
     error_msg, succeeded = layer1.saveNamedStyle(style_file)
     if not succeeded:
@@ -196,8 +191,7 @@ def copy_layer_style_and_position(
 
 
 def clean_qgis_layer(fn: Callable[..., QgsMapLayer]) -> Callable[..., QgsMapLayer]:
-    """
-    Decorator to ensure that a map layer created by a fixture is cleaned properly.
+    """Decorator to ensure that a map layer created by a fixture is cleaned properly.
 
     Sometimes fixture non-memory layers that are used but not added
     to the project might cause segmentation fault errors.
@@ -226,8 +220,7 @@ def clean_qgis_layer(fn: Callable[..., QgsMapLayer]) -> Callable[..., QgsMapLaye
 
 
 def ensure_qgis_layer_fixtures_are_cleaned(request: "FixtureRequest") -> None:
-    """
-    Sometimes fixture non-memory layers that are used but not added
+    """Sometimes fixture non-memory layers that are used but not added
     to the project might cause segmentation fault errors.
 
     This function ensures that the layer fixtures will be cleaned by
