@@ -1,5 +1,9 @@
 # Unreleased
 
+## New features
+
+* Add support for processing plugins with QGIS >=4.3
+
 # Version 4.1.1 (04-08-2026)
 
 ## Fixes
