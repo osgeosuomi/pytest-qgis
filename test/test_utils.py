@@ -22,7 +22,6 @@ from typing import TYPE_CHECKING
 import pytest
 from qgis.core import QgsCoordinateReferenceSystem, QgsProject, QgsVectorLayer
 from qgis.PyQt import sip
-from tests.utils import EPSG_3067, EPSG_4326
 
 from pytest_qgis.utils import (
     clean_qgis_layer,
@@ -31,6 +30,7 @@ from pytest_qgis.utils import (
     replace_layers_with_reprojected_clones,
     set_map_crs_based_on_layers,
 )
+from pytest_qgis_test_utils.utils import EPSG_3067, EPSG_4326
 
 if TYPE_CHECKING:
     from pathlib import Path
