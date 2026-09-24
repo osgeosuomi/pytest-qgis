@@ -35,13 +35,15 @@ This plugin makes it easier to write QGIS plugin tests with the help of some fix
 
 * `qgis_show_map` lets developer inspect the QGIS map visually during the test and also at the teardown of the test. Full signature of the marker
   is:
+
   ```python
   @pytest.mark.qgis_show_map(timeout: int = 30, add_basemap: bool = False, zoom_to_common_extent: bool = True, extent: QgsRectangle = None)
   ```
-    * `timeout` is the time in seconds until the map is closed. If timeout is zero, the map will be closed in teardown.
-    * `add_basemap` when set to True, adds Natural Earth countries layer as the basemap for the map.
-    * `zoom_to_common_extent` when set to True, centers the map around all layers in the project.
-    * `extent` is alternative to `zoom_to_common_extent` and lets user specify the extent
+
+  * `timeout` is the time in seconds until the map is closed. If timeout is zero, the map will be closed in teardown.
+  * `add_basemap` when set to True, adds Natural Earth countries layer as the basemap for the map.
+  * `zoom_to_common_extent` when set to True, centers the map around all layers in the project.
+  * `extent` is alternative to `zoom_to_common_extent` and lets user specify the extent
       as [`QgsRectangle`](https://qgis.org/pyqgis/master/core/QgsRectangle.html)
 
 Check the marker api [documentation](https://docs.pytest.org/en/latest/mark.html)
@@ -57,7 +59,6 @@ markers can be used.
   > Be careful not to import modules importing `qgis.utils.iface` in the root of conftest, because the `pytest_configure` hook has not yet patched `iface` in that point. See [this issue](https://github.com/osgeosuomi/pytest-qgis/issues/35) for details.
 
 * `pytest_runtest_teardown` hook is used to ensure that all layer fixtures of any scope are cleaned properly without causing segmentation faults. The layer fixtures that are cleaned automatically must have some of the following keywords in their name: "layer", "lyr", "raster", "rast", "tif".
-
 
 ### Utility tools
 
@@ -78,17 +79,18 @@ markers can be used.
   from pytest_qgis.utils import clean_qgis_layer
   from qgis.core import QgsVectorLayer
 
+
   @pytest.fixture()
   @clean_qgis_layer
   def geojson() -> QgsVectorLayer:
       return QgsVectorLayer("layer_file.geojson", "some layer")
+
 
   # This will be cleaned automatically since it contains the keyword "layer" in its name
   @pytest.fixture()
   def geojson_layer() -> QgsVectorLayer:
       return QgsVectorLayer("layer_file2.geojson", "some layer")
   ```
-
 
 ### Command line options
 
@@ -142,7 +144,6 @@ Tests can be run in parallel with
 without configuration: each worker gets its own `QgsApplication` and
 settings directory (`.qgis-settings/<worker_id>`).
 
-
 ## QgisBot
 
 Class to hold common utility methods for interacting with QGIS. Check [test_qgis_bot.py](tests%2Ftest_qgis_bot.py) for usage examples.  Here are some of the methods:
@@ -164,33 +165,15 @@ Install with `pip`:
 pip install pytest-qgis
 ```
 
-## Development environment
+## Development
 
-This project uses [uv](https://docs.astral.sh/uv/getting-started/installation/)
-to manage python packages. Make sure to have it installed first.
-
-- Create a venv that is aware of system QGIS libraries: `uv venv --system-site-packages`. Make sure to use same Python executable as QGIS.
-    - On Windows, maybe use a tool like [qgis-venv-creator](ttps://github.com/GispoCoding/qgis-venv-creator).
-
-```shell
-# Activate the virtual environment
-$ source .venv/bin/activate
-# Install dependencies
-$ uv sync
-# Install pre-commit hooks
-$ pre-commit install
-```
-
-### Updating dependencies
-
-`uv lock --upgrade`
+See [DEVELOPMENT.md](./DEVELOPMENT.md).
 
 ## Contributing
 
 Contributions are very welcome. Get started by reading OSGeo
 Suomi [CONTRIBUTING guidelines](https://github.com/osgeosuomi/.github/blob/main/CONTRIBUTING.md).
 
-
 ## License
 
-Distributed under the terms of the `GNU GPL v2.0` license, "pytest-qgis" is free and open source software.
+Distributed under the terms of the `GNU GPL v2.0` license, or (at your option) any later version. "pytest-qgis" is free and open source software.

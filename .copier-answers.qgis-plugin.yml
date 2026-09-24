@@ -1,0 +1,17 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v0.6.1
+_src_path: https://github.com/osgeosuomi/qgis-plugin-copier-template.git
+add_github_workflows: true
+insert_copyright_header: true
+is_monorepo_component: false
+min_code_coverage: 80
+plugin_metadata_author: OSGeo Suomi
+plugin_metadata_email: info@osgeo.fi
+plugin_metadata_repository_url: https://github.com/osgeosuomi/pytest-qgis
+qgis_plugin_about: A pytest plugin for testing QGIS python plugins.
+qgis_plugin_class: PytestQgis
+qgis_plugin_description: A pytest plugin for testing QGIS python plugins.
+qgis_plugin_module: pytest_qgis
+qgis_plugin_name: pytest-qgis
+qgis_version: QGIS3 & QGIS4
+setup_translations: false
