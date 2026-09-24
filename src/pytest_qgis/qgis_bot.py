@@ -33,9 +33,7 @@ from pytest_qgis import utils
 
 
 class QgisBot:
-    """
-    Class to hold common utility methods for interacting with QIGS.
-    """
+    """Class to hold common utility methods for interacting with QIGS."""
 
     def __init__(  # noqa: QGS105 # Iface has to be passed in order to
         # ensure compatibility with all QGIS versions >= 3.10
@@ -53,8 +51,7 @@ class QgisBot:
         raise_from_errors: bool = True,
         show_dialog_timeout_milliseconds: int = 0,
     ) -> QgsFeature:
-        """
-        Create test feature with default values using QgsAttributeDialog.
+        """Create test feature with default values using QgsAttributeDialog.
         This ensures that all the default values are honored and
         for example boolean fields are either true or false, not null.
 
@@ -69,7 +66,6 @@ class QgisBot:
             debugging.
         :return: Created QgsFeature that can be added to the layer.
         """
-
         initial_ids = set(layer.allFeatureIds())
 
         capabilities = layer.dataProvider().capabilities()
@@ -150,8 +146,7 @@ class QgisBot:
     def get_qgs_attribute_dialog_widgets_by_name(
         widget: QgsAttributeDialog | QWidget,
     ) -> dict[str, QWidget]:
-        """
-        Gets recursively all attribute dialog widgets by name.
+        """Gets recursively all attribute dialog widgets by name.
         :param widget: QgsAttributeDialog for the first time, afterwards QWidget.
         :return: Dictionary with field names as keys and corresponding
         QWidgets as values.

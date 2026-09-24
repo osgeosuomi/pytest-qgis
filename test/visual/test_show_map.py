@@ -18,7 +18,6 @@
 #
 import pytest
 from qgis.core import QgsProject, QgsRectangle
-
 from tests.utils import IN_CI
 
 """

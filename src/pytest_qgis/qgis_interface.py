@@ -116,9 +116,7 @@ class QgisInterface(QObject):
         self._mock_methods: dict[str, MagicMock] = {}
 
     def __getattr__(self, name: str) -> MagicMock:
-        """
-        Return a MagicMock for any method not explicitly implemented.
-        """
+        """Return a MagicMock for any method not explicitly implemented."""
         if name not in self._mock_methods:
             self._mock_methods[name] = MagicMock(name=name)
         return self._mock_methods[name]
@@ -237,7 +235,6 @@ class QgisInterface(QObject):
         :param action: Action to add to menu.
         :type action: QAction
         """
-        pass
 
     def addToolBarIcon(self, action: QAction) -> None:
         """Add an icon to the plugins toolbar.
@@ -245,7 +242,6 @@ class QgisInterface(QObject):
         :param action: Action to add to the toolbar.
         :type action: QAction
         """
-        pass
 
     def removeToolBarIcon(self, action: QAction) -> None:
         """Remove an action (icon) from the plugin toolbar.
@@ -253,7 +249,6 @@ class QgisInterface(QObject):
         :param action: Action to add to the toolbar.
         :type action: QAction
         """
-        pass
 
     def addToolBar(self, toolbar: str | QToolBar) -> QToolBar:
         """Add toolbar with specified name.
@@ -289,13 +284,11 @@ class QgisInterface(QObject):
         :param dock_widget: A dock widget to add to the UI.
         :type dock_widget: QDockWidget
         """
-        pass
 
     def removeDockWidget(self, dockwidget: QDockWidget) -> None:
         """Removes the specified dock widget from main window
         (without deleting it).
         """
-        pass
 
     def legendInterface(self) -> QgsMapCanvas:
         """Get the legend."""

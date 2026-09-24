@@ -273,16 +273,13 @@ def qgis_iface() -> QgisInterfaceOrig:
 
 @pytest.fixture(scope="session")
 def qgis_processing(qgis_app: QgsApplication) -> None:
-    """
-    Initializes QGIS processing framework
-    """
+    """Initializes QGIS processing framework"""
     _initialize_processing(qgis_app)
 
 
 @pytest.fixture
 def qgis_new_project(qgis_iface: QgisInterface, request: "SubRequest") -> QgsProject:
-    """
-    Initializes new QGIS project by removing layers and relations etc.
+    """Initializes new QGIS project by removing layers and relations etc.
 
     :return: QgsProject instance
     """
@@ -297,8 +294,7 @@ def qgis_new_project(qgis_iface: QgisInterface, request: "SubRequest") -> QgsPro
 
 @pytest.fixture
 def qgis_world_map_geopackage(tmp_path: Path) -> Path:
-    """
-    Path to natural world map geopackage containing Natural Earth data.
+    """Path to natural world map geopackage containing Natural Earth data.
     This geopackage can be modified in any way.
 
     Layers:
@@ -311,17 +307,13 @@ def qgis_world_map_geopackage(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def qgis_countries_layer(qgis_world_map_geopackage: Path) -> QgsVectorLayer:
-    """
-    Natural Earth countries as a QgsVectorLayer.
-    """
+    """Natural Earth countries as a QgsVectorLayer."""
     return _get_countries_layer(qgis_world_map_geopackage)
 
 
 @pytest.fixture(scope="session")
 def qgis_bot(qgis_iface: QgisInterface) -> QgisBot:
-    """
-    Object that holds common utility methods for interacting with QGIS.
-    """
+    """Object that holds common utility methods for interacting with QGIS."""
     return QgisBot(qgis_iface)
 
 
@@ -333,9 +325,7 @@ def qgis_show_map(
     tmp_path: Path,
     request: "SubRequest",
 ) -> None:
-    """
-    Shows QGIS map if qgis_show_map marker is used.
-    """
+    """Shows QGIS map if qgis_show_map marker is used."""
     # Noop if server session
     if _QGIS_SERVER:
         yield
@@ -655,23 +645,23 @@ def _parse_show_map_marker(marker: "Mark") -> ShowMapSettings:  # noqa: C901, PL
 
     if len(marker.args) >= 1 and timeout is not notset:
         raise TypeError("Multiple values for timeout argument of qgis_show_map marker")
-    elif len(marker.args) >= 1:
+    if len(marker.args) >= 1:
         timeout = marker.args[0]
     if len(marker.args) >= 2 and add_basemap is not notset:  # noqa: PLR2004
         raise TypeError(
             "Multiple values for add_basemap argument of qgis_show_map marker"
         )
-    elif len(marker.args) >= 2:  # noqa: PLR2004
+    if len(marker.args) >= 2:  # noqa: PLR2004
         add_basemap = marker.args[1]
     if len(marker.args) >= 3 and zoom_to_common_extent is not notset:  # noqa: PLR2004
         raise TypeError(
             "Multiple values for zoom_to_common_extent argument of qgis_show_map marker"
         )
-    elif len(marker.args) >= 3:  # noqa: PLR2004
+    if len(marker.args) >= 3:  # noqa: PLR2004
         zoom_to_common_extent = marker.args[2]
     if len(marker.args) >= 4 and extent is not notset:  # noqa: PLR2004
         raise TypeError("Multiple values for extent argument of qgis_show_map marker")
-    elif len(marker.args) >= 4:  # noqa: PLR2004
+    if len(marker.args) >= 4:  # noqa: PLR2004
         extent = marker.args[3]
     if len(marker.args) > 4:  # noqa: PLR2004
         raise TypeError("Too many arguments for qgis_show_map marker")
