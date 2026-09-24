@@ -97,6 +97,7 @@ def transform_rectangle(
 
 
 def get_layers_with_different_crs() -> list[QgsMapLayer]:
+    """Return project layers whose crs differs from the project crs."""
     map_crs = QgsProject.instance().crs()
     return [
         layer
@@ -109,9 +110,10 @@ def replace_layers_with_reprojected_clones(
     layers: list[QgsMapLayer], output_path: Path
 ) -> None:
     """For some reason all layers having differing crs from the project are invisible.
+
     Hotfix is to replace those by reprojected layers with map crs.
     """
-    import processing  # noqa: PLC0415
+    from qgis import processing  # noqa: PLC0415
 
     vector_layers = [
         layer
@@ -161,37 +163,40 @@ def replace_layers_with_reprojected_clones(
 
 
 def copy_layer_style_and_position(
-    layer1: QgsMapLayer, layer2: QgsMapLayer, tmp_path: Path
+    layer1: QgsMapLayer,  # noqa: SC200
+    layer2: QgsMapLayer,  # noqa: SC200
+    tmp_path: Path,
 ) -> None:
     """Copy layer style and position to another layer."""
-    style_file = str(Path(tmp_path, f"{layer1.id()}.qml"))
-    error_msg, succeeded = layer1.saveNamedStyle(style_file)
+    style_file = str(Path(tmp_path, f"{layer1.id()}.qml"))  # noqa: SC200
+    error_msg, succeeded = layer1.saveNamedStyle(style_file)  # noqa: SC200
     if not succeeded:
-        raise AssertionError(f"Failed to save layer style to {style_file}: {error_msg}")
+        msg = f"Failed to save layer style to {style_file}: {error_msg}"
+        raise AssertionError(msg)
 
-    error_msg, succeeded = layer2.loadNamedStyle(style_file)
+    error_msg, succeeded = layer2.loadNamedStyle(style_file)  # noqa: SC200
     if not succeeded:
-        raise AssertionError(
-            f"Failed to load layer style from {style_file}: {error_msg}"
-        )
-    layer2.setMetadata(layer1.metadata())
-    layer2.setName(layer1.name())
-    if layer2.isValid():  # noqa: SIM102
-        if not QgsProject.instance().addMapLayer(layer2, False):
-            raise AssertionError(f"Failed to add layer {layer2.name()} to project")
+        msg = f"Failed to load layer style from {style_file}: {error_msg}"
+        raise AssertionError(msg)
+    layer2.setMetadata(layer1.metadata())  # noqa: SC200
+    layer2.setName(layer1.name())  # noqa: SC200
+    if layer2.isValid():  # noqa: SC200, SIM102
+        if not QgsProject.instance().addMapLayer(layer2, False):  # noqa: FBT003, SC200
+            msg = f"Failed to add layer {layer2.name()} to project"  # noqa: SC200
+            raise AssertionError(msg)
 
     root: QgsLayerTree = QgsProject.instance().layerTreeRoot()
-    layer_tree_layer: QgsLayerTreeLayer = root.findLayer(layer1)
+    layer_tree_layer: QgsLayerTreeLayer = root.findLayer(layer1)  # noqa: SC200
     group: QgsLayerTreeGroup = layer_tree_layer.parent()
     index = {child.name(): i for i, child in enumerate(group.children())}[
         layer_tree_layer.name()
     ]
 
-    group.insertLayer(index + 1, layer2)
+    group.insertLayer(index + 1, layer2)  # noqa: SC200
 
 
 def clean_qgis_layer(fn: Callable[..., QgsMapLayer]) -> Callable[..., QgsMapLayer]:
-    """Decorator to ensure that a map layer created by a fixture is cleaned properly.
+    """Ensure that a map layer created by a fixture is cleaned properly.
 
     Sometimes fixture non-memory layers that are used but not added
     to the project might cause segmentation fault errors.
@@ -211,7 +216,7 @@ def clean_qgis_layer(fn: Callable[..., QgsMapLayer]) -> Callable[..., QgsMapLaye
     """
 
     @wraps(fn)
-    def wrapper(*args: Any, **kwargs: Any) -> Generator[QgsMapLayer, None, None]:
+    def wrapper(*args: Any, **kwargs: Any) -> Generator[QgsMapLayer, None, None]:  # noqa: ANN401
         layer = fn(*args, **kwargs)
         yield layer
         _set_layer_owner_to_project(layer)
@@ -220,7 +225,9 @@ def clean_qgis_layer(fn: Callable[..., QgsMapLayer]) -> Callable[..., QgsMapLaye
 
 
 def ensure_qgis_layer_fixtures_are_cleaned(request: "FixtureRequest") -> None:
-    """Sometimes fixture non-memory layers that are used but not added
+    """Ensure that layer fixtures are cleaned.
+
+    Sometimes fixture non-memory layers that are used but not added
     to the project might cause segmentation fault errors.
 
     This function ensures that the layer fixtures will be cleaned by
@@ -241,15 +248,16 @@ def ensure_qgis_layer_fixtures_are_cleaned(request: "FixtureRequest") -> None:
             _set_layer_owner_to_project(layer)
 
 
-def _set_layer_owner_to_project(layer: Any) -> None:
+def _set_layer_owner_to_project(layer: Any) -> None:  # noqa: ANN401
     if (
         isinstance(layer, QgsMapLayer)
         and not isinstance(layer, MagicMock)
         and not sip.isdeleted(layer)
-        and layer.id() not in QgsProject.instance().mapLayers(True)
+        and layer.id() not in QgsProject.instance().mapLayers(True)  # noqa: FBT003
     ):
         if not QgsProject.instance().addMapLayer(layer):
-            raise AssertionError(f"Failed to add layer {layer.name()} to project")
+            msg = f"Failed to add layer {layer.name()} to project"
+            raise AssertionError(msg)
         QgsProject.instance().removeMapLayer(layer)
 
 
@@ -260,7 +268,10 @@ def process_events() -> None:
 
 
 def wait(wait_time_milliseconds: int = 0) -> None:
-    """Run an event loop for the given time. wait(0) just flushes events."""
+    """Run an event loop for the given time.
+
+    wait(0) just flushes events.
+    """
     if wait_time_milliseconds <= 0:
         process_events()
         return

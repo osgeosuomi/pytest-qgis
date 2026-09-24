@@ -38,7 +38,7 @@ class MockMessageBar(QgsMessageBarOriginal):
         }
 
     def get_messages(self, level: int) -> list[str]:
-        """Used to test which messages have been logged."""
+        """Return messages logged with the given level."""
         return self.messages[level]
 
     def clear_messages(self) -> None:
@@ -78,7 +78,7 @@ class MockMessageBar(QgsMessageBarOriginal):
         *args: str | int,
         **kwargs: dict[str, str | int],
     ) -> None:
-        """A mocked method for pushing a message to the bar."""
+        """Mock pushing a message to the bar."""
         title = kwargs.get("title")
         text = kwargs.get("text")
         level = kwargs.get("level", Qgis.MessageLevel.Info)

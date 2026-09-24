@@ -83,7 +83,7 @@ def test_wait_does_not_busy_spin():
 
 
 @pytest.mark.parametrize("_repetition", range(20))
-def test_signal_from_thread_is_delivered_deterministically(_repetition):
+def test_signal_from_thread_is_delivered_deterministically(_repetition: int):
     """The canonical flaky pattern: a thread emits into a main-thread mock."""
     thread = PollingThread()
     mock = Mock()

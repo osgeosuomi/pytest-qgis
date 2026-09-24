@@ -16,9 +16,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 #
+from typing import TYPE_CHECKING
+
 import pytest
 from qgis.core import QgsProject, QgsRectangle
 from tests.utils import IN_CI
+
+if TYPE_CHECKING:
+    from qgis.core import QgsApplication, QgsRasterLayer, QgsVectorLayer
+    from qgis.gui import QgsMapCanvas
+    from qgis.PyQt.QtWidgets import QWidget
 
 """
 These tests are meant to be tested visually by the developer.
@@ -36,34 +43,39 @@ QGIS_3_18 = 31800
 
 
 @pytest.fixture(autouse=True)
-def setup(qgis_new_project):
+def setup(qgis_new_project: QgsProject):
     pass
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
-def test_show_map(layer_polygon, qgis_canvas, qgis_parent):
+def test_show_map(
+    layer_polygon: "QgsVectorLayer", qgis_canvas: "QgsMapCanvas", qgis_parent: "QWidget"
+):
     assert QgsProject.instance().addMapLayers([layer_polygon])
     assert qgis_parent.size() == qgis_canvas.size()
 
 
 @pytest.mark.qgis_show_map(timeout=0)
-def test_show_map_with_zero_timeout(layer_polygon):
+def test_show_map_with_zero_timeout(layer_polygon: "QgsVectorLayer"):
     assert QgsProject.instance().addMapLayers([layer_polygon])
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT, extent=QgsRectangle(25, 65, 26, 66))
-def test_show_map_custom_extent(layer_polygon):
+def test_show_map_custom_extent(layer_polygon: "QgsVectorLayer"):
     assert QgsProject.instance().addMapLayers([layer_polygon])
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT, add_basemap=True)
-def test_show_map_with_basemap(layer_polygon):
+def test_show_map_with_basemap(layer_polygon: "QgsVectorLayer"):
     assert QgsProject.instance().addMapLayers([layer_polygon])
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
 def test_show_map_crs_change_to_3067(
-    layer_polygon, layer_polygon_3067, raster_3067, qgis_version
+    layer_polygon: "QgsVectorLayer",
+    layer_polygon_3067: "QgsVectorLayer",
+    raster_3067: "QgsRasterLayer",
+    qgis_version: int,
 ):
     layer_polygon_3067.setOpacity(0.3)
     if qgis_version > QGIS_3_18:
@@ -75,7 +87,10 @@ def test_show_map_crs_change_to_3067(
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
 def test_show_map_crs_change_to_3067_with_different_layer_order(
-    layer_polygon, layer_polygon_3067, raster_3067, qgis_version
+    layer_polygon: "QgsVectorLayer",
+    layer_polygon_3067: "QgsVectorLayer",
+    raster_3067: "QgsRasterLayer",
+    qgis_version: int,
 ):
     layer_polygon_3067.setOpacity(0.3)
     if qgis_version > QGIS_3_18:
@@ -87,7 +102,10 @@ def test_show_map_crs_change_to_3067_with_different_layer_order(
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT, add_basemap=True)
 def test_show_map_crs_change_to_3067_with_basemap(
-    layer_polygon, layer_polygon_3067, raster_3067, qgis_version
+    layer_polygon: "QgsVectorLayer",
+    layer_polygon_3067: "QgsVectorLayer",
+    raster_3067: "QgsRasterLayer",
+    qgis_version: int,
 ):
     layer_polygon_3067.setOpacity(0.3)
     if qgis_version > QGIS_3_18:
@@ -99,7 +117,10 @@ def test_show_map_crs_change_to_3067_with_basemap(
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
 def test_show_map_crs_change_to_4326(
-    layer_polygon, raster_3067, layer_points, qgis_version
+    layer_polygon: "QgsVectorLayer",
+    raster_3067: "QgsRasterLayer",
+    layer_points: "QgsVectorLayer",
+    qgis_version: int,
 ):
     if qgis_version > QGIS_3_18:
         raster_3067.setOpacity(0.9)
@@ -109,7 +130,11 @@ def test_show_map_crs_change_to_4326(
 
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
-def test_show_map_crs_change_to_4326_2(layer_polygon, layer_points, layer_polygon_3067):
+def test_show_map_crs_change_to_4326_2(
+    layer_polygon: "QgsVectorLayer",
+    layer_points: "QgsVectorLayer",
+    layer_polygon_3067: "QgsVectorLayer",
+):
     assert QgsProject.instance().addMapLayers(
         [layer_points, layer_polygon_3067, layer_polygon]
     )
@@ -117,7 +142,9 @@ def test_show_map_crs_change_to_4326_2(layer_polygon, layer_points, layer_polygo
 
 @pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT, zoom_to_common_extent=False)
 def test_map_extent_should_not_change_to_layers_extent_when_processing_events(
-    layer_polygon_3067, qgis_canvas, qgis_app
+    layer_polygon_3067: "QgsVectorLayer",
+    qgis_canvas: "QgsMapCanvas",
+    qgis_app: "QgsApplication",
 ):
     extent_smaller_than_layer = QgsRectangle(475804, 7145949.5, 549226, 7219371.5)
 

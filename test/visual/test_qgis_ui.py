@@ -16,16 +16,30 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import TYPE_CHECKING
+
 import pytest
 from qgis.gui import QgsAttributeDialog
 from qgis.PyQt import QtCore
 from tests.utils import IN_CI
 
+if TYPE_CHECKING:
+    from pytestqt.qtbot import QtBot
+    from qgis.core import QgsVectorLayer
+    from qgis.gui import QgisInterface
+
+    from pytest_qgis.qgis_bot import QgisBot
+
 TIMEOUT = 10 if IN_CI else 1000
 
 
 @pytest.mark.with_pytest_qt
-def test_attribute_dialog_change(qgis_iface, layer_points, qgis_bot, qtbot):
+def test_attribute_dialog_change(
+    qgis_iface: "QgisInterface",
+    layer_points: "QgsVectorLayer",
+    qgis_bot: "QgisBot",
+    qtbot: "QtBot",
+):
     # The essential thing is QgsGui.editorWidgetRegistry().initEditors()
     layer = layer_points
 

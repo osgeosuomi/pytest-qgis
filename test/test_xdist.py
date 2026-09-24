@@ -29,47 +29,49 @@ pytest.importorskip("xdist")
 
 
 class StubConfig:
-    def __init__(self, workerinput=None, dist="no") -> None:
+    def __init__(
+        self, workerinput: dict[str, str] | None = None, dist: str = "no"
+    ) -> None:
         if workerinput is not None:
             self.workerinput = workerinput
         self._dist = dist
 
-    def getoption(self, name: str, default=None):  # noqa: ARG002
+    def getoption(self, name: str, default: object = None):  # noqa: ARG002
         assert name == "dist"
         return self._dist
 
 
-def test_worker_id_from_workerinput(monkeypatch):
+def test_worker_id_from_workerinput(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("PYTEST_XDIST_WORKER", raising=False)
     config = StubConfig(workerinput={"workerid": "gw1"})
     assert _get_xdist_worker_id(config) == "gw1"
 
 
-def test_worker_id_from_environment(monkeypatch):
+def test_worker_id_from_environment(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("PYTEST_XDIST_WORKER", "gw2")
     config = StubConfig()
     assert _get_xdist_worker_id(config) == "gw2"
 
 
-def test_worker_id_missing(monkeypatch):
+def test_worker_id_missing(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("PYTEST_XDIST_WORKER", raising=False)
     config = StubConfig()
     assert _get_xdist_worker_id(config) is None
 
 
-def test_controller_detected(monkeypatch):
+def test_controller_detected(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("PYTEST_XDIST_WORKER", raising=False)
     config = StubConfig(dist="load")
     assert _is_xdist_controller(config)
 
 
-def test_serial_run_is_not_controller(monkeypatch):
+def test_serial_run_is_not_controller(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("PYTEST_XDIST_WORKER", raising=False)
     config = StubConfig(dist="no")
     assert not _is_xdist_controller(config)
 
 
-def test_worker_is_not_controller(monkeypatch):
+def test_worker_is_not_controller(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("PYTEST_XDIST_WORKER", raising=False)
     config = StubConfig(workerinput={"workerid": "gw0"}, dist="load")
     assert not _is_xdist_controller(config)

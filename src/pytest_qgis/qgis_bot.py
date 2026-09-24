@@ -42,16 +42,17 @@ class QgisBot:
     ) -> None:
         self._iface = iface
 
-    def create_feature_with_attribute_dialog(  # noqa: PLR0913
+    def create_feature_with_attribute_dialog(  # noqa: PLR0913, PLR0917
         self,
         layer: QgsVectorLayer,
         geometry: QgsGeometry,
         attributes: dict[str, Any] | None = None,
-        raise_from_warnings: bool = False,
-        raise_from_errors: bool = True,
+        raise_from_warnings: bool = False,  # noqa: FBT001, FBT002
+        raise_from_errors: bool = True,  # noqa: FBT001, FBT002
         show_dialog_timeout_milliseconds: int = 0,
     ) -> QgsFeature:
         """Create test feature with default values using QgsAttributeDialog.
+
         This ensures that all the default values are honored and
         for example boolean fields are either true or false, not null.
 
@@ -71,7 +72,8 @@ class QgisBot:
         capabilities = layer.dataProvider().capabilities()
 
         if not capabilities & QgsVectorDataProvider.Capability.AddFeatures:
-            raise ValueError(f"Could not create feature for the layer {layer.name()}")
+            msg = f"Could not create feature for the layer {layer.name()}"
+            raise ValueError(msg)
 
         new_feature = QgsVectorLayerUtils.createFeature(
             layer, context=layer.createExpressionContext()
@@ -83,11 +85,10 @@ class QgisBot:
                 for field_name, value in attributes.items():
                     new_feature[field_name] = value
             else:
-                raise ValueError(
-                    f"Could not change attributes for layer {layer.name()}"
-                )
+                msg = f"Could not change attributes for layer {layer.name()}"
+                raise ValueError(msg)
 
-        assert new_feature.isValid()
+        assert new_feature.isValid()  # noqa: S101
 
         warnings = {}
         errors = {}
@@ -110,21 +111,28 @@ class QgisBot:
                 errors[field.name()] = error_messages
 
         if raise_from_warnings and warnings:
-            raise ValueError(
+            msg = (
                 "There are non-enforcing constraint warnings in the attribute form: "
                 f"{warnings!s}"
             )
+            raise ValueError(msg)
         if raise_from_errors and errors:
-            raise ValueError(
+            msg = (
                 "There are enforcing constraint errors in the attribute form: "
                 f"{errors!s}"
             )
+            raise ValueError(msg)
 
         context = QgsAttributeEditorContext()
         context.setMapCanvas(self._iface.mapCanvas())
 
         dialog = QgsAttributeDialog(
-            layer, new_feature, False, self._iface.mainWindow(), True, context
+            layer,
+            new_feature,
+            False,  # noqa: FBT003
+            self._iface.mainWindow(),
+            True,  # noqa: FBT003
+            context,
         )
         dialog.show()
         dialog.setMode(QgsAttributeEditorContext.Mode.AddFeatureMode)
@@ -139,14 +147,15 @@ class QgisBot:
         feature_ids = set(layer.allFeatureIds())
         feature_id = list(feature_ids.difference(initial_ids))
 
-        assert feature_id, "Creating new feature failed"
+        assert feature_id, "Creating new feature failed"  # noqa: S101
         return layer.getFeature(feature_id[0])
 
     @staticmethod
     def get_qgs_attribute_dialog_widgets_by_name(
         widget: QgsAttributeDialog | QWidget,
     ) -> dict[str, QWidget]:
-        """Gets recursively all attribute dialog widgets by name.
+        """Get recursively all attribute dialog widgets by name.
+
         :param widget: QgsAttributeDialog for the first time, afterwards QWidget.
         :return: Dictionary with field names as keys and corresponding
         QWidgets as values.

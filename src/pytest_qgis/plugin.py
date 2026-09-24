@@ -73,7 +73,7 @@ QGIS_V4_3_INT = 40300
 
 LOGGER = logging.getLogger("QGIS")
 
-Settings = namedtuple(
+Settings = namedtuple(  # noqa: PYI024
     "Settings",
     [
         "gui_enabled",
@@ -84,7 +84,7 @@ Settings = namedtuple(
         "canvas_height",
     ],
 )
-ShowMapSettings = namedtuple(
+ShowMapSettings = namedtuple(  # noqa: PYI024
     "ShowMapSettings", ["timeout", "add_basemap", "zoom_to_common_extent", "extent"]
 )
 
@@ -137,6 +137,7 @@ except AttributeError:
 
 @pytest.hookimpl()
 def pytest_addoption(parser: "Parser") -> None:
+    """Add pytest-qgis command line options and ini values."""
     group = parser.getgroup(
         "qgis",
         "Utilities for testing QGIS plugins",
@@ -189,7 +190,7 @@ def pytest_configure(config: "Config") -> None:
     config.addinivalue_line("markers", SHOW_MAP_MARKER_DESCRIPTION)
 
     settings = _parse_settings(config)
-    config._plugin_settings = settings
+    config._plugin_settings = settings  # noqa: SLF001
 
     if _is_xdist_controller(config):
         # The controller runs no tests; each worker gets its own app
@@ -206,6 +207,7 @@ def pytest_runtest_teardown(
     item: pytest.Item,
     nextitem: pytest.Item | None,
 ) -> Generator[None, None, None]:
+    """Clean layer fixtures and flush queued events after each test."""
     request = item.funcargs.get("request")
     if request:
         ensure_qgis_layer_fixtures_are_cleaned(request)
@@ -224,13 +226,14 @@ def pytest_runtest_teardown(
 
 @pytest.fixture(autouse=True, scope="session")
 def qgis_app(request: "SubRequest") -> QgsApplication:
-    yield _APP if not request.config._plugin_settings.qgis_init_disabled else None
+    """Initialize QgsApplication for the test session."""
+    yield _APP if not request.config._plugin_settings.qgis_init_disabled else None  # noqa: SLF001
 
-    if not request.config._plugin_settings.qgis_init_disabled:
+    if not request.config._plugin_settings.qgis_init_disabled:  # noqa: SLF001
         global _LEGEND_LAYERS_CONNECTED  # noqa: PLW0603
-        assert _APP
+        assert _APP  # noqa: S101
 
-        if not request.config._plugin_settings.qgis_server:
+        if not request.config._plugin_settings.qgis_server:  # noqa: SLF001
             if _LEGEND_LAYERS_CONNECTED:
                 with contextlib.suppress(TypeError):
                     QgsProject.instance().legendLayersAdded.disconnect(process_events)
@@ -240,19 +243,21 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
                 # Deliver the deferred delete before exitQgis
                 process_events()
 
-        if not request.config._plugin_settings.qgis_exit_disabled:
+        if not request.config._plugin_settings.qgis_exit_disabled:  # noqa: SLF001
             LOGGER.debug("EXITING QGIS")
             _APP.exitQgis()
 
 
 @pytest.fixture(scope="session")
 def qgis_parent(qgis_app: QgsApplication) -> QWidget:  # noqa: ARG001
+    """Parent widget of the QGIS main window."""
     return _PARENT
 
 
 @pytest.fixture(scope="session")
 def qgis_canvas() -> QgsMapCanvas:
-    assert _CANVAS
+    """QgsMapCanvas instance."""
+    assert _CANVAS  # noqa: S101
     return _CANVAS
 
 
@@ -264,22 +269,23 @@ def qgis_version() -> int:
 
 @pytest.fixture(scope="session")
 def qgis_iface() -> QgisInterfaceOrig:
+    """Stubbed QgisInterface instance."""
     # This is needed because qgis_iface
     # is required in autouse=True fixture qgis_show_map
     if not _QGIS_SERVER:
-        assert _IFACE
+        assert _IFACE  # noqa: S101
     return _IFACE
 
 
 @pytest.fixture(scope="session")
 def qgis_processing(qgis_app: QgsApplication) -> None:
-    """Initializes QGIS processing framework"""
+    """Initialize QGIS processing framework."""
     _initialize_processing(qgis_app)
 
 
 @pytest.fixture
-def qgis_new_project(qgis_iface: QgisInterface, request: "SubRequest") -> QgsProject:
-    """Initializes new QGIS project by removing layers and relations etc.
+def qgis_new_project(qgis_iface: QgisInterface, request: "SubRequest") -> QgsProject:  # noqa: QGS105
+    """Initialize new QGIS project by removing layers and relations etc.
 
     :return: QgsProject instance
     """
@@ -295,6 +301,7 @@ def qgis_new_project(qgis_iface: QgisInterface, request: "SubRequest") -> QgsPro
 @pytest.fixture
 def qgis_world_map_geopackage(tmp_path: Path) -> Path:
     """Path to natural world map geopackage containing Natural Earth data.
+
     This geopackage can be modified in any way.
 
     Layers:
@@ -312,7 +319,7 @@ def qgis_countries_layer(qgis_world_map_geopackage: Path) -> QgsVectorLayer:
 
 
 @pytest.fixture(scope="session")
-def qgis_bot(qgis_iface: QgisInterface) -> QgisBot:
+def qgis_bot(qgis_iface: QgisInterface) -> QgisBot:  # noqa: QGS105
     """Object that holds common utility methods for interacting with QGIS."""
     return QgisBot(qgis_iface)
 
@@ -324,17 +331,17 @@ def qgis_show_map(
     qgis_parent: QWidget | None,
     tmp_path: Path,
     request: "SubRequest",
-) -> None:
-    """Shows QGIS map if qgis_show_map marker is used."""
+) -> Generator[None, None, None]:
+    """Show QGIS map if qgis_show_map marker is used."""
     # Noop if server session
     if _QGIS_SERVER:
         yield
         return
 
-    assert qgis_iface is not None
+    assert qgis_iface is not None  # noqa: S101
 
     show_map_marker = request.node.get_closest_marker(SHOW_MAP_MARKER)
-    common_settings: Settings = request.config._plugin_settings
+    common_settings: Settings = request.config._plugin_settings  # noqa: SLF001
 
     if show_map_marker:
         # Assign the bridge to have correct layer order and visibilities
@@ -417,7 +424,7 @@ def _load_qgis_settings(config: "Config") -> None:
 
 def _start_and_configure_qgis_app(config: "Config") -> None:
     global _APP, _CANVAS, _IFACE, _PARENT, _LEGEND_LAYERS_CONNECTED  # noqa: PLW0603
-    settings: Settings = config._plugin_settings
+    settings: Settings = config._plugin_settings  # noqa: SLF001
 
     # From qgis server
     # Will enable us to read qgis setting file
@@ -427,7 +434,7 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
 
     QCoreApplication.setAttribute(
         Qt.ApplicationAttribute.AA_ShareOpenGLContexts,
-        True,
+        True,  # noqa: FBT003
     )
 
     _load_qgis_settings(config)
@@ -438,7 +445,7 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
     if not settings.qgis_init_disabled and _APP is None:
         _APP = QgsApplication(
             [],
-            GUIenabled=settings.gui_enabled,
+            GUIenabled=settings.gui_enabled,  # noqa: SC200
             platformName=platform,
         )
         # Do not initialize QGIS app in qgis server mode
@@ -477,7 +484,7 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
 
 def _init_qgis_plugins_path(qgis_app: QgsApplication) -> None:
     # Give access to python QGIS plugins
-    python_plugins_path = os.path.join(qgis_app.pkgDataPath(), "python", "plugins")
+    python_plugins_path = os.path.join(qgis_app.pkgDataPath(), "python", "plugins")  # noqa: PTH118
     if python_plugins_path not in sys.path:
         LOGGER.info("QGIS plugins path: %s", python_plugins_path)
         sys.path.append(python_plugins_path)
@@ -501,9 +508,8 @@ def _initialize_processing(_qgis_app: QgsApplication) -> None:
             module = importlib.import_module(module_name)
         except ImportError:
             if _QGIS_VERSION >= QGIS_V4_3_INT:
-                raise ImportError(
-                    f"Cannot import {module_name} with QGIS version {_QGIS_VERSION}"
-                ) from None
+                msg = f"Cannot import {module_name} with QGIS version {_QGIS_VERSION}"
+                raise ImportError(msg) from None
             continue
         provider = getattr(module, class_name)()
         if registry.providerById(provider.id()) is None and registry.addProvider(
@@ -530,7 +536,7 @@ def _show_qgis_dlg(common_settings: Settings, qgis_parent: QWidget) -> None:
         )
 
 
-def _configure_qgis_map(
+def _configure_qgis_map(  # noqa: QGS105
     qgis_app: QgsApplication,
     qgis_iface: QgisInterface,
     qgis_parent: QWidget,
@@ -564,9 +570,8 @@ def _configure_qgis_map(
             # Add Natural Earth Countries
             countries_layer = _get_countries_layer(_get_world_map_geopackage(tmp_path))
             if not QgsProject.instance().addMapLayer(countries_layer):
-                raise AssertionError(
-                    f"Failed to add countries layer: {countries_layer.name()}"
-                )
+                msg = f"Failed to add countries layer: {countries_layer.name()}"
+                raise AssertionError(msg)
             if countries_layer.crs() != QgsProject.instance().crs():
                 _initialize_processing(qgis_app)
                 replace_layers_with_reprojected_clones([countries_layer], tmp_path)
@@ -639,32 +644,34 @@ def _parse_show_map_marker(marker: "Mark") -> ShowMapSettings:  # noqa: C901, PL
         elif kwarg == "extent":
             extent = value
         else:
-            raise TypeError(
-                f"Invalid keyword argument for qgis_show_map marker: {kwarg}"
-            )
+            msg = f"Invalid keyword argument for qgis_show_map marker: {kwarg}"
+            raise TypeError(msg)
 
     if len(marker.args) >= 1 and timeout is not notset:
-        raise TypeError("Multiple values for timeout argument of qgis_show_map marker")
+        msg = "Multiple values for timeout argument of qgis_show_map marker"
+        raise TypeError(msg)
     if len(marker.args) >= 1:
         timeout = marker.args[0]
     if len(marker.args) >= 2 and add_basemap is not notset:  # noqa: PLR2004
-        raise TypeError(
-            "Multiple values for add_basemap argument of qgis_show_map marker"
-        )
+        msg = "Multiple values for add_basemap argument of qgis_show_map marker"
+        raise TypeError(msg)
     if len(marker.args) >= 2:  # noqa: PLR2004
         add_basemap = marker.args[1]
     if len(marker.args) >= 3 and zoom_to_common_extent is not notset:  # noqa: PLR2004
-        raise TypeError(
+        msg = (
             "Multiple values for zoom_to_common_extent argument of qgis_show_map marker"
         )
+        raise TypeError(msg)
     if len(marker.args) >= 3:  # noqa: PLR2004
         zoom_to_common_extent = marker.args[2]
     if len(marker.args) >= 4 and extent is not notset:  # noqa: PLR2004
-        raise TypeError("Multiple values for extent argument of qgis_show_map marker")
+        msg = "Multiple values for extent argument of qgis_show_map marker"
+        raise TypeError(msg)
     if len(marker.args) >= 4:  # noqa: PLR2004
         extent = marker.args[3]
     if len(marker.args) > 4:  # noqa: PLR2004
-        raise TypeError("Too many arguments for qgis_show_map marker")
+        msg = "Too many arguments for qgis_show_map marker"
+        raise TypeError(msg)
 
     if timeout is notset:
         timeout = SHOW_MAP_VISIBILITY_TIMEOUT_DEFAULT
@@ -675,7 +682,8 @@ def _parse_show_map_marker(marker: "Mark") -> ShowMapSettings:  # noqa: C901, PL
     if extent is notset:
         extent = None
     elif not isinstance(extent, QgsRectangle):
-        raise TypeError("Extent has to be of type QgsRectangle")
+        msg = "Extent has to be of type QgsRectangle"
+        raise TypeError(msg)
     return ShowMapSettings(timeout, add_basemap, zoom_to_common_extent, extent)
 
 
@@ -684,7 +692,7 @@ def _get_world_map_geopackage(tmp_path: Path) -> Path:
     world_map_gpkg = Path(
         QgsApplication.pkgDataPath(), "resources", "data", "world_map.gpkg"
     )
-    assert world_map_gpkg.exists(), world_map_gpkg
+    assert world_map_gpkg.exists(), world_map_gpkg  # noqa: S101
 
     # Copy the geopackage to allow modifications
     return Path(shutil.copy(world_map_gpkg, tmp_path))
@@ -696,5 +704,5 @@ def _get_countries_layer(geopackage: Path) -> QgsVectorLayer:
         "Natural Earth Countries",
         "ogr",
     )
-    assert countries_layer.isValid(), geopackage
+    assert countries_layer.isValid(), geopackage  # noqa: S101
     return countries_layer

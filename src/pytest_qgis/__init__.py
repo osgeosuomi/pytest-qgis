@@ -38,7 +38,8 @@ __all__ = [
 
 def __getattr__(name: str) -> object:
     if name not in __all__:
-        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+        msg = f"module {__name__!r} has no attribute {name!r}"
+        raise AttributeError(msg)
     from pytest_qgis import plugin  # noqa: PLC0415
 
     value = getattr(plugin, name)
