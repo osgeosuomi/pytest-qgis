@@ -20,7 +20,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 from qgis.core import QgsProject, QgsRectangle
-from tests.utils import IN_CI
+
+from pytest_qgis_test_utils.utils import IN_CI
 
 if TYPE_CHECKING:
     from qgis.core import QgsApplication, QgsRasterLayer, QgsVectorLayer

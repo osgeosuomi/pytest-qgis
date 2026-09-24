@@ -20,9 +20,39 @@
 from typing import TYPE_CHECKING
 
 import pytest
+import qgis.utils
+from qgis.core import QgsProject
+
+from pytest_qgis import plugin
+from pytest_qgis.utils import process_events
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from _pytest.pytester import Testdir
+
+
+@pytest.fixture(autouse=True)
+def _restore_outer_session_gui(monkeypatch: pytest.MonkeyPatch) -> "Iterator[None]":
+    """Dispose the GUI created by in-process pytester runs and restore the outer one.
+
+    Otherwise the orphaned canvas keeps rendering and crashes at process exit.
+    """
+    for name in ("_PARENT", "_CANVAS", "_IFACE"):
+        monkeypatch.setattr(plugin, name, getattr(plugin, name))
+    monkeypatch.setattr(qgis.utils, "iface", qgis.utils.iface)
+    outer_iface = plugin._IFACE
+
+    yield
+
+    inner_iface = plugin._IFACE
+    inner_parent = plugin._PARENT
+    if inner_iface is not None and inner_iface is not outer_iface:
+        QgsProject.instance().layersAdded.disconnect(inner_iface.addLayers)
+        QgsProject.instance().removeAll.disconnect(inner_iface.removeAllLayers)
+        if inner_parent is not None:
+            inner_parent.deleteLater()
+            process_events()
 
 
 def test_ini_canvas(testdir: "Testdir"):
@@ -45,7 +75,10 @@ def test_ini_canvas(testdir: "Testdir"):
 
 
 @pytest.mark.parametrize("gui_enabled", [True, False])
-def test_ini_gui(gui_enabled: bool, testdir: "Testdir"):
+def test_ini_gui(
+    gui_enabled: bool, testdir: "Testdir", monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.delenv("QT_QPA_PLATFORM", raising=False)
     testdir.makeini(
         f"""
         [pytest]

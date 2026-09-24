@@ -20,8 +20,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 from qgis.gui import QgsAttributeDialog
-from qgis.PyQt import QtCore
-from tests.utils import IN_CI
+from qgis.PyQt.QtCore import Qt
+
+from pytest_qgis_test_utils.utils import IN_CI
 
 if TYPE_CHECKING:
     from pytestqt.qtbot import QtBot
@@ -61,7 +62,7 @@ def test_attribute_dialog_change(
     test_text = "New string"
 
     # Doubleclick and keys after that erase the old text
-    qtbot.mouseDClick(widgets_by_name["text_field"], QtCore.Qt.LeftButton)
+    qtbot.mouseDClick(widgets_by_name["text_field"], Qt.MouseButton.LeftButton)
     qtbot.keyClicks(widgets_by_name["text_field"], test_text)
 
     qtbot.wait(TIMEOUT)
