@@ -6,7 +6,14 @@ on:
       - "v*"
 
 jobs:
+  style:
+    uses: ./.github/workflows/code-style.yml
+
+  test:
+    uses: ./.github/workflows/tests.yml
+
   build:
+    needs: [style, test]
     name: Build and publish release
     runs-on: ubuntu-latest
     environment:

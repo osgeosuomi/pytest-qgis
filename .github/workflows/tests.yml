@@ -1,0 +1,78 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: qgis/qgis:${{ matrix.qgis-image-tag }}
+    strategy:
+      matrix:
+        # Adjust image tags as needed
+        qgis-image-tag: ["3.40-noble", "3.44-noble", "4.0-questing", "latest"]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Full history so diff-cover can compare against the main branch
+          fetch-depth: 0
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+
+      - name: Install venv
+        run: |
+          uv venv --system-site-packages
+
+      - name: Run tests
+        run: |
+          uv sync --all-packages --no-group lint --locked --active
+          uv run pytest -v --qgis_disable_gui --cov --cov-report=xml
+
+      - name: Check code coverage for changed lines
+        if: ${{ matrix.qgis-image-tag == '3.44-noble' }}
+        # Check coverage (80% or more) if more than 20 lines changed
+        run: |
+          apt-get update && apt-get install -y jq
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          uv pip install diff_cover
+          uv run --no-sync diff-cover coverage.xml --format json:report.json
+          total_num_lines=$(jq '.["total_num_lines"]' report.json)
+          total_percent_covered=$(jq '.["total_percent_covered"]' report.json)
+          test "$total_num_lines" -le 20 || test "$total_percent_covered" -ge 80
+
+      - name: Check total code coverage
+        if: ${{ matrix.qgis-image-tag == '3.44-noble' }}
+        run: |
+          uv run coverage report --fail-under=80
+
+      - name: Install curl and git
+        if: ${{ matrix.qgis-image-tag == '3.44-noble' }}
+        run: |
+          apt update
+          apt install -y curl git
+
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.qgis-image-tag == '3.44-noble' }}
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          flags: pytest
+          fail_ci_if_error: false # set to true when upload is working
+          verbose: false

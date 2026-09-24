@@ -7,6 +7,8 @@
 ## Changes
 
 * The pytest plugin now lives in `pytest_qgis.plugin`. This might break some imports.
+* Adopt qgis-plugin-copier-template
+* Drop support for Python 3.10 and 3.11
 
 # Version 4.1.1 (04-08-2026)
 
