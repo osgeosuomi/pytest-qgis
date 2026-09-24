@@ -17,6 +17,7 @@
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 
 import contextlib
+import importlib
 import logging
 import os.path
 import shutil
@@ -68,6 +69,7 @@ if TYPE_CHECKING:
     from _pytest.mark import Mark
 
 QGIS_V4_INT = 40000
+QGIS_V4_3_INT = 40300
 
 LOGGER = logging.getLogger("QGIS")
 
@@ -498,6 +500,26 @@ def _initialize_processing(_qgis_app: QgsApplication) -> None:
     from processing.core.Processing import Processing  # noqa: PLC0415
 
     Processing.initialize()
+
+    # In QGIS versions >=4.3 the QGIS and GDAL providers live in separate core plugins
+    registry = QgsApplication.processingRegistry()
+    for module_name, class_name in (
+        ("qgisprovider.qgis_provider", "QgisAlgorithmProvider"),
+        ("gdalprovider.gdal_algorithm_provider", "GdalAlgorithmProvider"),
+    ):
+        try:
+            module = importlib.import_module(module_name)
+        except ImportError:
+            if _QGIS_VERSION >= QGIS_V4_3_INT:
+                raise ImportError(
+                    f"Cannot import {module_name} with QGIS version {_QGIS_VERSION}"
+                ) from None
+            continue
+        provider = getattr(module, class_name)()
+        if registry.providerById(provider.id()) is None and registry.addProvider(
+            provider
+        ):
+            Processing.BASIC_PROVIDERS.append(provider)
 
 
 def _show_qgis_dlg(common_settings: Settings, qgis_parent: QWidget) -> None:
