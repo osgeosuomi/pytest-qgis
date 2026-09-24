@@ -30,13 +30,13 @@ def gpkg(tmp_path: Path) -> Path:
 
 
 @pytest.fixture(scope="module")
-def gpkg_module(tmpdir_factory) -> Path:
+def gpkg_module(tmpdir_factory: pytest.TempdirFactory) -> Path:
     tmp_path = Path(tmpdir_factory.mktemp("pytest_qgis_data"))
     return get_copied_gpkg(tmp_path)
 
 
 @pytest.fixture(scope="session")
-def gpkg_session(tmpdir_factory) -> Path:
+def gpkg_session(tmpdir_factory: pytest.TempdirFactory) -> Path:
     tmp_path = Path(tmpdir_factory.mktemp("pytest_qgis_data"))
     return get_copied_gpkg(tmp_path)
 

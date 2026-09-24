@@ -82,11 +82,11 @@ class QgisInterface(QObject):
     newProjectCreated = pyqtSignal()  # noqa: N815
 
     def __init__(
-        self, canvas: QgsMapCanvas, messageBar: MockMessageBar, mainWindow: QMainWindow
+        self,
+        canvas: QgsMapCanvas,
+        messageBar: MockMessageBar,  # noqa: N803
+        mainWindow: QMainWindow,  # noqa: N803
     ) -> None:
-        """Constructor
-        :param canvas:
-        """
         QObject.__init__(self)
         self.canvas = canvas
         self._messageBar = messageBar
@@ -122,7 +122,7 @@ class QgisInterface(QObject):
         return self._mock_methods[name]
 
     @pyqtSlot("QList<QgsMapLayer*>")
-    def addLayers(self, layers: list[QgsMapLayer]) -> None:
+    def addLayers(self, layers: list[QgsMapLayer]) -> None:  # noqa: N802
         """Handle layers being added to the registry so they show up in canvas.
 
         :param layers: list<QgsMapLayer> list of map layers that were added
@@ -130,28 +130,24 @@ class QgisInterface(QObject):
         .. note:: The QgsInterface api does not include this method,
             it is added here as a helper to facilitate testing.
         """
-        # LOGGER.debug('addLayers called on qgis_interface')
-        # LOGGER.debug('Number of layers being added: %s' % len(layers))
-        # LOGGER.debug('Layer Count Before: %s' % len(self.canvas.layers()))
         current_layers = self.canvas.layers()
-        final_layers = []
-        for layer in current_layers:
-            final_layers.append(layer)
-        for layer in layers:
-            final_layers.append(layer)
+        final_layers = list(current_layers)
+        final_layers.extend(layers)
         self._layers = final_layers
 
         self.canvas.setLayers(final_layers)
-        # LOGGER.debug('Layer Count After: %s' % len(self.canvas.layers()))
 
     @pyqtSlot()
-    def removeAllLayers(self) -> None:
+    def removeAllLayers(self) -> None:  # noqa: N802
         """Remove layers from the canvas before they get deleted."""
         if not sip.isdeleted(self.canvas):
             self.canvas.setLayers([])
         self._layers = []
 
-    def newProject(self, promptToSaveFlag: bool = False) -> bool:  # noqa: ARG002
+    def newProject(  # noqa: N802
+        self,
+        promptToSaveFlag: bool = False,  # noqa: ARG002, FBT001, FBT002, N803
+    ) -> bool:
         """Create new project."""
         # noinspection PyArgumentList
         instance = QgsProject.instance()
@@ -169,19 +165,19 @@ class QgisInterface(QObject):
 
     # ---------------- API Mock for QgsInterface follows -------------------
 
-    def zoomFull(self) -> None:
+    def zoomFull(self) -> None:  # noqa: N802
         """Zoom to the map full extent."""
 
-    def zoomToPrevious(self) -> None:
+    def zoomToPrevious(self) -> None:  # noqa: N802
         """Zoom to previous view extent."""
 
-    def zoomToNext(self) -> None:
+    def zoomToNext(self) -> None:  # noqa: N802
         """Zoom to next view extent."""
 
-    def zoomToActiveLayer(self) -> None:
+    def zoomToActiveLayer(self) -> None:  # noqa: N802
         """Zoom to extent of active layer."""
 
-    def addVectorLayer(
+    def addVectorLayer(  # noqa: N802
         self, path: str, base_name: str, provider_key: str
     ) -> QgsVectorLayer:
         """Add a vector layer.
@@ -201,24 +197,30 @@ class QgisInterface(QObject):
 
     @typing.overload
     def addRasterLayer(
-        self, rasterLayerPath: str | None, baseName: str | None = None
+        self,
+        rasterLayerPath: str | None,  # noqa: N803
+        baseName: str | None = None,  # noqa: N803
     ) -> QgsRasterLayer | None:
         pass
 
     @typing.overload
     def addRasterLayer(
-        self, url: str | None, layerName: str | None, providerKey: str | None
+        self,
+        url: str | None,
+        layerName: str | None,  # noqa: N803
+        providerKey: str | None,  # noqa: N803
     ) -> QgsRasterLayer | None:
         pass
 
-    def addRasterLayer(
-        self, *args: str, **kwargs: dict[str, str]
+    def addRasterLayer(  # noqa: N802
+        self, *args: str | None, **kwargs: str | None
     ) -> QgsRasterLayer | None:
+        """Add a raster layer."""
         layer = QgsRasterLayer(*args, **kwargs)
         self.addLayers([layer])
         return layer
 
-    def activeLayer(self) -> QgsMapLayer | None:
+    def activeLayer(self) -> QgsMapLayer | None:  # noqa: N802
         """Get pointer to the active layer (layer selected in the legend)."""
         return (
             QgsProject.instance().mapLayer(self._active_layer_id)
@@ -226,7 +228,7 @@ class QgisInterface(QObject):
             else None
         )
 
-    def addPluginToMenu(self, name: str, action: QAction) -> None:
+    def addPluginToMenu(self, name: str, action: QAction) -> None:  # noqa: N802
         """Add plugin item to menu.
 
         :param name: Name of the menu item
@@ -236,21 +238,21 @@ class QgisInterface(QObject):
         :type action: QAction
         """
 
-    def addToolBarIcon(self, action: QAction) -> None:
+    def addToolBarIcon(self, action: QAction) -> None:  # noqa: N802
         """Add an icon to the plugins toolbar.
 
         :param action: Action to add to the toolbar.
         :type action: QAction
         """
 
-    def removeToolBarIcon(self, action: QAction) -> None:
+    def removeToolBarIcon(self, action: QAction) -> None:  # noqa: N802
         """Remove an action (icon) from the plugin toolbar.
 
         :param action: Action to add to the toolbar.
         :type action: QAction
         """
 
-    def addToolBar(self, toolbar: str | QToolBar) -> QToolBar:
+    def addToolBar(self, toolbar: str | QToolBar) -> QToolBar:  # noqa: N802
         """Add toolbar with specified name.
 
         :param toolbar: Name for the toolbar or QToolBar object.
@@ -264,18 +266,18 @@ class QgisInterface(QObject):
         self._toolbars[name] = _toolbar
         return _toolbar
 
-    def mapCanvas(self) -> QgsMapCanvas:
+    def mapCanvas(self) -> QgsMapCanvas:  # noqa: N802
         """Return a pointer to the map canvas."""
         return self.canvas
 
-    def mainWindow(self) -> QWidget:
+    def mainWindow(self) -> QWidget:  # noqa: N802
         """Return a pointer to the main window.
 
         In case of QGIS it returns an instance of QgisApp.
         """
         return self._mainWindow
 
-    def addDockWidget(self, area: int, dock_widget: QDockWidget) -> None:
+    def addDockWidget(self, area: int, dock_widget: QDockWidget) -> None:  # noqa: N802
         """Add a dock widget to the main window.
 
         :param area: Where in the ui the dock should be placed.
@@ -285,28 +287,28 @@ class QgisInterface(QObject):
         :type dock_widget: QDockWidget
         """
 
-    def removeDockWidget(self, dockwidget: QDockWidget) -> None:
-        """Removes the specified dock widget from main window
-        (without deleting it).
-        """
+    def removeDockWidget(self, dockwidget: QDockWidget) -> None:  # noqa: N802
+        """Remove the specified dock widget from main window (without deleting it)."""
 
-    def legendInterface(self) -> QgsMapCanvas:
+    def legendInterface(self) -> QgsMapCanvas:  # noqa: N802
         """Get the legend."""
         return self.canvas
 
-    def messageBar(self) -> MockMessageBar:
-        """Get the messagebar"""
+    def messageBar(self) -> MockMessageBar:  # noqa: N802
+        """Get the messagebar."""
         return self._messageBar
 
-    def getMockLayers(self) -> list[QgsMapLayer]:
+    def getMockLayers(self) -> list[QgsMapLayer]:  # noqa: N802
+        """Get the layers added to the mock interface."""
         return self._layers
 
-    def setActiveLayer(self, layer: QgsMapLayer) -> None:
-        """Set the active layer (layer gets selected in the legend)"""
+    def setActiveLayer(self, layer: QgsMapLayer) -> None:  # noqa: N802
+        """Set the active layer (layer gets selected in the legend)."""
         self._active_layer_id = layer.id()
 
-    def iconSize(self, dockedToolbar: bool) -> int:
-        """Returns the toolbar icon size.
+    def iconSize(self, dockedToolbar: bool) -> int:  # noqa: FBT001, N802, N803
+        """Return the toolbar icon size.
+
         :param dockedToolbar: If True, the icon size
         for toolbars contained within dockes is returned
         """
