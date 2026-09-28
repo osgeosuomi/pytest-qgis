@@ -25,8 +25,8 @@ and hooks:
 * `qgis_canvas` returns [`QgsMapCanvas`](https://qgis.org/pyqgis/master/gui/QgsMapCanvas.html).
 * `qgis_parent` returns the QWidget used as parent of the `qgis_canvas`
 * `qgis_iface` returns stubbed
-  [`QgsInterface`](https://qgis.org/pyqgis/master/gui/QgisInterface.html). All the
-  methods that are not implemented return a MagickMock that can be used for testing the
+  [`QgisInterface`](https://qgis.org/pyqgis/master/gui/QgisInterface.html). All the
+  methods that are not implemented return a MagicMock that can be used for testing the
   calls.
 * `qgis_new_project` makes sure that all the map layers and configurations are removed.
   This should be used with tests that add stuff to
@@ -36,7 +36,7 @@ and hooks:
   code that calls `processing.run(...)`.
 * `qgis_version` returns QGIS version number as integer.
 * `qgis_world_map_geopackage` returns Path to the world_map.gpkg that ships with QGIS
-* `qgis_countries_layer` returns Natural Earth countries layer from world.map.gpkg as
+* `qgis_countries_layer` returns Natural Earth countries layer from world_map.gpkg as
   QgsVectorLayer
 
 ### Markers
@@ -129,7 +129,7 @@ for the ways markers can be used.
 * `qgis_canvas_width` width of the QGIS canvas in pixels. Defaults to 600.
 * `qgis_canvas_height` height of the QGIS canvas in pixels. Defaults to 600.
 * `qgis_server` support qgis server only plugin testing. This prevent initializing qgis
-  interface and allow instanciating QgsServer() safely.
+  interface and allow instantiating QgsServer() safely.
 * `qgis_disable_exit` whether to disable QGIS (QgsApplication) from exiting in teardown.
   This might be useful if C++ errors occur.
 
@@ -137,7 +137,7 @@ for the ways markers can be used.
 
 When running tests, a directory named `.qgis-settings` will be created
 containings all QGIS default profile as well as QGIS settings.
-Most of the time you can ignore this repository, but it may be useful for inspecting
+Most of the time you can ignore this directory, but it may be useful for inspecting
 created default settings.
 
 You may define custom settings to be loaded at startup: in your
