@@ -7,6 +7,7 @@
 ## Fixes
 
 * `qgis_show_map` no longer fails with non-file rasters such as XYZ layers
+* `qgis_show_map` keeps hidden layers hidden when reprojecting layers
 
 ## Changes
 

@@ -118,6 +118,21 @@ def test_replace_layers_with_reprojected_clones(
     assert (tmp_path / f"{raster_layer_id}.qml").exists()
 
 
+@pytest.mark.usefixtures("qgis_processing", "layers_added", "_set_crs")
+def test_replace_layers_with_reprojected_clones_keeps_visibility(
+    layer_polygon_3067: QgsVectorLayer,
+    tmp_path: "Path",
+):
+    root = QgsProject.instance().layerTreeRoot()
+    root.findLayer(layer_polygon_3067).setItemVisibilityChecked(False)
+    name = layer_polygon_3067.name()
+
+    replace_layers_with_reprojected_clones([layer_polygon_3067], tmp_path)
+
+    (clone,) = QgsProject.instance().mapLayersByName(name)
+    assert not root.findLayer(clone).itemVisibilityChecked()
+
+
 @pytest.mark.usefixtures("qgis_processing", "_set_crs")
 def test_replace_layers_with_reprojected_clones_skips_non_file_rasters(
     qgis_new_project: QgsProject,

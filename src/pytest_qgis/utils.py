@@ -199,7 +199,8 @@ def copy_layer_style_and_position(
         layer_tree_layer.name()
     ]
 
-    group.insertLayer(index + 1, layer2)  # noqa: SC200
+    new_node = group.insertLayer(index + 1, layer2)  # noqa: SC200
+    new_node.setItemVisibilityChecked(layer_tree_layer.itemVisibilityChecked())
 
 
 def clean_qgis_layer(fn: Callable[..., QgsMapLayer]) -> Callable[..., QgsMapLayer]:
