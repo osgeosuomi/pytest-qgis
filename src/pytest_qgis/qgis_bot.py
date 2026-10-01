@@ -16,12 +16,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 #
+from pathlib import Path
 from typing import Any
 
 from qgis.core import (
     QgsFeature,
     QgsFieldConstraints,
     QgsGeometry,
+    QgsProject,
     QgsVectorDataProvider,
     QgsVectorLayer,
     QgsVectorLayerUtils,
@@ -33,7 +35,7 @@ from pytest_qgis import utils
 
 
 class QgisBot:
-    """Class to hold common utility methods for interacting with QIGS."""
+    """Class to hold common utility methods for interacting with QGIS."""
 
     def __init__(  # noqa: QGS105 # Iface has to be passed in order to
         # ensure compatibility with all QGIS versions >= 3.10
@@ -41,6 +43,24 @@ class QgisBot:
         iface: QgisInterface,
     ) -> None:
         self._iface = iface
+
+    def open_project(self, project_file: Path | str) -> QgsProject:
+        """Clear the current project and open the given project file.
+
+        Map canvas shows the visible layers of the project in the
+        layer tree order, with the extent and crs stored in the project.
+
+        :param project_file: Path to the .qgs or .qgz file.
+        :return: QgsProject instance
+        :raises AssertionError: If the project could not be read.
+        """
+        project = QgsProject.instance()
+        project.clear()
+        if not project.read(str(project_file)):
+            msg = f"Failed to open project {project_file}: {project.error()}"
+            raise AssertionError(msg)
+        utils.process_events()
+        return project
 
     def create_feature_with_attribute_dialog(  # noqa: PLR0913, PLR0917
         self,

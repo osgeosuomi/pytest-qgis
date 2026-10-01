@@ -174,15 +174,19 @@ settings directory (`.qgis-settings/<worker_id>`).
 ## QgisBot
 
 Class to hold common utility methods for interacting with QGIS. Check
-[test_qgis_bot.py](tests%2Ftest_qgis_bot.py) for usage examples.  Here are some of the
+[test_qgis_bot.py](test/test_qgis_bot.py) for usage examples.  Here are some of the
 methods:
 
 * `create_feature_with_attribute_dialog` method can be used to create a feature with
   default values using QgsAttributeDialog. This ensures that all the default values are
   honored and for example boolean fields are either true or false, not null.
+* `open_project` method clears the current project and opens the given `.qgs` or `.qgz`
+  file. The map canvas shows the visible layers of the project in the layer tree order
+  with the extent and CRS saved in the project. The project stays open after the test,
+  so use the `qgis_new_project` fixture in tests that need an empty project.
 * `get_qgs_attribute_dialog_widgets_by_name` function can be used to get dictionary of
   the `QgsAttributeDialog` widgets. Check the test
-  [test_qgis_ui.py::test_attribute_dialog_change](./tests/visual/test_qgis_ui.py) for a
+  [test_qgis_ui.py::test_attribute_dialog_change](./test/visual/test_qgis_ui.py) for a
   usage example.
 
 ## Requirements

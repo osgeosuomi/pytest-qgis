@@ -3,9 +3,12 @@
 ## New features
 
 * Add support for processing plugins with QGIS >=4.3
+* Add `QgisBot.open_project` for opening QGIS project files
+* Add `addProject` to the stubbed `QgisInterface`
 
 ## Fixes
 
+* Map canvas shows only visible layers in the layer tree order after a project is read
 * `qgis_show_map` no longer fails with non-file rasters such as XYZ layers
 * `qgis_show_map` keeps hidden layers hidden when reprojecting layers
 
