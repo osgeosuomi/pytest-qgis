@@ -1,4 +1,0 @@
-{
-    "comment_changelog": true,
-    "pull_request_title_regex": "(?i:release)"
-}
