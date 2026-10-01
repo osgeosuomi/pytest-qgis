@@ -118,12 +118,17 @@ def replace_layers_with_reprojected_clones(
     vector_layers = [
         layer
         for layer in layers
-        if isinstance(layer, QgsVectorLayer) and layer.isSpatial()
+        if isinstance(layer, QgsVectorLayer) and layer.isValid() and layer.isSpatial()
     ]
+    # Only file based rasters can be warped with GDAL, e.g. XYZ and WMS layers
+    # are reprojected on the fly by QGIS
     raster_layers = [
         layer
         for layer in layers
-        if isinstance(layer, QgsRasterLayer) and layer.isSpatial()
+        if isinstance(layer, QgsRasterLayer)
+        and layer.isValid()
+        and layer.isSpatial()
+        and layer.providerType() == "gdal"
     ]
 
     map_crs = QgsProject.instance().crs()
@@ -158,8 +163,10 @@ def replace_layers_with_reprojected_clones(
             output_layer.setCrs(map_crs)
         copy_layer_style_and_position(input_layer, output_layer, output_path)
 
-    # Remove originals from project
-    QgsProject.instance().removeMapLayers([layer.id() for layer in layers])
+    # Remove replaced originals from project
+    QgsProject.instance().removeMapLayers(
+        [layer.id() for layer in [*vector_layers, *raster_layers]]
+    )
 
 
 def copy_layer_style_and_position(
