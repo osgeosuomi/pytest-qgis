@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 5.0.0 - 2026-10-01
 
 ### API Breaks
 * The pytest plugin now lives in `pytest_qgis.plugin`. This might break some imports.
