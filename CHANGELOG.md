@@ -1,5 +1,7 @@
 # Changelog
 
+## Unreleased
+
 ## 5.0.0 - 2026-10-01
 
 ### API Breaks
