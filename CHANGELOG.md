@@ -4,6 +4,10 @@
 
 * Add support for processing plugins with QGIS >=4.3
 
+## Fixes
+
+* `qgis_show_map` no longer fails with non-file rasters such as XYZ layers
+
 ## Changes
 
 * The pytest plugin now lives in `pytest_qgis.plugin`. This might break some imports.

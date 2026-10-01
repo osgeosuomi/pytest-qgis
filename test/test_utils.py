@@ -20,7 +20,12 @@
 from typing import TYPE_CHECKING
 
 import pytest
-from qgis.core import QgsCoordinateReferenceSystem, QgsProject, QgsVectorLayer
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsProject,
+    QgsRasterLayer,
+    QgsVectorLayer,
+)
 from qgis.PyQt import sip
 
 from pytest_qgis.utils import (
@@ -34,8 +39,6 @@ from pytest_qgis_test_utils.utils import EPSG_3067, EPSG_4326
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    from qgis.core import QgsRasterLayer
 
 QGIS_3_12 = 31200
 
@@ -113,6 +116,24 @@ def test_replace_layers_with_reprojected_clones(
     assert layers[raster_layer_name].crs().authid() == EPSG_4326
     assert (tmp_path / f"{vector_layer_id}.qml").exists()
     assert (tmp_path / f"{raster_layer_id}.qml").exists()
+
+
+@pytest.mark.usefixtures("qgis_processing", "_set_crs")
+def test_replace_layers_with_reprojected_clones_skips_non_file_rasters(
+    qgis_new_project: QgsProject,
+    tmp_path: "Path",
+):
+    xyz_layer = QgsRasterLayer(
+        "type=xyz&url=https://tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png"
+        "&zmax=19&zmin=0",
+        "xyz",
+        "wms",
+    )
+    assert qgis_new_project.addMapLayer(xyz_layer)
+
+    replace_layers_with_reprojected_clones([xyz_layer], tmp_path)
+
+    assert qgis_new_project.mapLayer(xyz_layer.id()) is xyz_layer
 
 
 def test_clean_qgis_layer(layer_polygon: QgsVectorLayer):
