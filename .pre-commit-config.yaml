@@ -50,6 +50,13 @@ repos:
     hooks:
       - id: actionlint
 
+  - repo: https://github.com/nlsfi/qgis-plugin-dev-tools
+    rev: 5bedbcb39455262e5e1aed1e5ca5e9f14928799f  # frozen: v0.13.2
+    hooks:
+      - id: normalize-xml
+        files: \.(xml|qml|ui|qgs)$
+        args: [--remove-tag, ProjectGpsSettings, --remove-tag, properties]
+
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: ad1b27d73581aa16cca06fc4a0761fc563ffe8e8  # frozen: v1.5.6
     hooks:

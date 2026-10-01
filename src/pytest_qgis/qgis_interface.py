@@ -100,6 +100,10 @@ class QgisInterface(QObject):
         QgsProject.instance().layersAdded.connect(self.addLayers)
         # noinspection PyArgumentList
         QgsProject.instance().removeAll.connect(self.removeAllLayers)
+        # noinspection PyArgumentList
+        QgsProject.instance().readProject.connect(
+            self._set_canvas_layers_from_layer_tree
+        )
 
         # For processing module
         self.destCrs = None
@@ -137,6 +141,19 @@ class QgisInterface(QObject):
 
         self.canvas.setLayers(final_layers)
 
+    def _set_canvas_layers_from_layer_tree(self, *_args: object) -> None:
+        """Show visible layers of the read project in render order like QGIS does."""
+        if sip.isdeleted(self.canvas):
+            return
+        root = QgsProject.instance().layerTreeRoot()
+        layers = []
+        for layer in root.layerOrder():
+            node = root.findLayer(layer.id())
+            if node is not None and node.isVisible():
+                layers.append(layer)
+        self._layers = layers
+        self.canvas.setLayers(layers)
+
     @pyqtSlot()
     def removeAllLayers(self) -> None:  # noqa: N802
         """Remove layers from the canvas before they get deleted."""
@@ -162,6 +179,11 @@ class QgisInterface(QObject):
         self._messageBar.clear_messages()
         self.newProjectCreated.emit()
         return True
+
+    def addProject(self, project: str) -> bool:  # noqa: N802
+        """Clear the current project and read the given project file."""
+        QgsProject.instance().clear()
+        return QgsProject.instance().read(project)
 
     # ---------------- API Mock for QgsInterface follows -------------------
 

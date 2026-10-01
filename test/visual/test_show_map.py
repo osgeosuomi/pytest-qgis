@@ -24,9 +24,13 @@ from qgis.core import QgsProject, QgsRectangle
 from pytest_qgis_test_utils.utils import IN_CI
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from qgis.core import QgsApplication, QgsRasterLayer, QgsVectorLayer
     from qgis.gui import QgsMapCanvas
     from qgis.PyQt.QtWidgets import QWidget
+
+    from pytest_qgis.qgis_bot import QgisBot
 
 """
 These tests are meant to be tested visually by the developer.
@@ -157,3 +161,11 @@ def test_map_extent_should_not_change_to_layers_extent_when_processing_events(
     qgis_app.processEvents()
 
     assert qgis_canvas.extent().height() == extent_smaller_than_layer.height()
+
+
+@pytest.mark.qgis_show_map(timeout=DEFAULT_TIMEOUT)
+def test_show_map_with_opened_project(
+    qgis_bot: "QgisBot", qgis_project_file: "Path", qgis_canvas: "QgsMapCanvas"
+):
+    qgis_bot.open_project(qgis_project_file)
+    assert qgis_canvas.layers()

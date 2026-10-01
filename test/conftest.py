@@ -24,21 +24,36 @@ from qgis.core import QgsRasterLayer, QgsVectorLayer
 pytest_plugins = "pytester"
 
 
+@pytest.fixture(scope="session")
+def data_path() -> Path:
+    path = Path(__file__).parent / "data"
+    assert path.exists()
+    return path
+
+
 @pytest.fixture
-def gpkg(tmp_path: Path) -> Path:
-    return get_copied_gpkg(tmp_path)
+def gpkg(tmp_path: Path, data_path: Path) -> Path:
+    return get_copied_gpkg(tmp_path, data_path)
+
+
+@pytest.fixture
+def qgis_project_file(tmp_path: Path, data_path: Path) -> Path:
+    """Project file with the data sources it refers to with relative paths."""
+    get_copied_path(tmp_path, data_path / "db.gpkg")
+    get_copied_path(tmp_path, data_path / "small_raster.tif")
+    return get_copied_path(tmp_path, data_path / "pytest-qgis-project.qgs")
 
 
 @pytest.fixture(scope="module")
-def gpkg_module(tmpdir_factory: pytest.TempdirFactory) -> Path:
+def gpkg_module(tmpdir_factory: pytest.TempdirFactory, data_path: Path) -> Path:
     tmp_path = Path(tmpdir_factory.mktemp("pytest_qgis_data"))
-    return get_copied_gpkg(tmp_path)
+    return get_copied_gpkg(tmp_path, data_path)
 
 
 @pytest.fixture(scope="session")
-def gpkg_session(tmpdir_factory: pytest.TempdirFactory) -> Path:
+def gpkg_session(tmpdir_factory: pytest.TempdirFactory, data_path: Path) -> Path:
     tmp_path = Path(tmpdir_factory.mktemp("pytest_qgis_data"))
-    return get_copied_gpkg(tmp_path)
+    return get_copied_gpkg(tmp_path, data_path)
 
 
 @pytest.fixture
@@ -79,11 +94,17 @@ def layer_points(gpkg: Path):
     return get_gpkg_layer("points", gpkg)
 
 
-def get_copied_gpkg(tmp_path: Path) -> Path:
-    db = Path(Path(__file__).parent, "data", "db.gpkg")
-    new_db_path = tmp_path / "db.gpkg"
-    shutil.copy(db, new_db_path)
-    return new_db_path
+def get_copied_gpkg(tmp_path: Path, data_path: Path) -> Path:
+    return get_copied_path(tmp_path, data_path / "db.gpkg")
+
+
+def get_copied_path(tmp_path: Path, path: Path) -> Path:
+    new_path = tmp_path / path.name
+    if path.is_dir():
+        shutil.copytree(path, new_path)
+    else:
+        shutil.copy(path, new_path)
+    return new_path
 
 
 def get_gpkg_layer(name: str, gpkg: Path) -> QgsVectorLayer:
