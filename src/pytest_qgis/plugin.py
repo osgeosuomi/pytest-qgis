@@ -40,12 +40,13 @@ from qgis.core import (
 )
 from qgis.gui import QgisInterface as QgisInterfaceOrig
 from qgis.gui import QgsGui, QgsLayerTreeMapCanvasBridge, QgsMapCanvas
-from qgis.PyQt import QtCore, QtWidgets, sip
+from qgis.PyQt import QtCore, QtWidgets
 from qgis.PyQt.QtCore import (
     QCoreApplication,
     QEventLoop,
     QSettings,
     Qt,
+    QThreadPool,
     QTimer,
 )
 from qgis.PyQt.QtWidgets import QMainWindow, QMessageBox, QWidget
@@ -238,10 +239,16 @@ def qgis_app(request: "SubRequest") -> QgsApplication:
                 with contextlib.suppress(TypeError):
                     QgsProject.instance().legendLayersAdded.disconnect(process_events)
                 _LEGEND_LAYERS_CONNECTED = False
-            if not sip.isdeleted(_CANVAS) and _CANVAS is not None:
-                _CANVAS.deleteLater()
-                # Deliver the deferred delete before exitQgis
-                process_events()
+            # Render jobs deleted after exitQgis crash. Delete all canvases
+            # and let cancelled render jobs finish and get deleted
+            for widget in QtWidgets.QApplication.allWidgets():
+                if isinstance(widget, QgsMapCanvas):
+                    widget.deleteLater()
+            process_events()
+            QThreadPool.globalInstance().waitForDone()
+            # Jobs are deleted with deleteLater when their finished signal is handled
+            process_events()
+            process_events()
 
         if not request.config._plugin_settings.qgis_exit_disabled:  # noqa: SLF001
             LOGGER.debug("EXITING QGIS")
