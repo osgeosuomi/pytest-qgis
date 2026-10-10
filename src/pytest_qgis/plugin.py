@@ -448,6 +448,7 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
             GUIenabled=settings.gui_enabled,  # noqa: SC200
             platformName=platform,
         )
+        _fix_qgis_prefix_path()
         # Do not initialize QGIS app in qgis server mode
         # Since this is done in QgsServer() initialization
         if not settings.qgis_server:
@@ -480,6 +481,19 @@ def _start_and_configure_qgis_app(config: "Config") -> None:
     if _APP is not None:
         # Initialize plugin_path is all cases
         _init_qgis_plugins_path(_APP)
+
+
+def _fix_qgis_prefix_path() -> None:
+    """Fix QGIS prefix derived from the venv instead of real python with Qt>=6.12."""
+    prefix_path = Path(sys.executable).resolve().parent.parent
+    if (
+        "QGIS_PREFIX_PATH" not in os.environ
+        and not Path(QgsApplication.pkgDataPath(), "resources").is_dir()
+        and prefix_path.joinpath("share", "qgis", "resources").is_dir()
+    ):
+        # Env variable is respected also if QGIS is initialized again (QgsServer)
+        os.environ["QGIS_PREFIX_PATH"] = str(prefix_path)
+        QgsApplication.setPrefixPath(str(prefix_path), True)  # noqa: FBT003
 
 
 def _init_qgis_plugins_path(qgis_app: QgsApplication) -> None:

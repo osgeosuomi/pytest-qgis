@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+* Find QGIS data and plugins (e.g. processing) when running in a venv with Qt >= 6.12 on Linux
+
 ## 5.0.0 - 2026-10-01
 
 ### API Breaks
