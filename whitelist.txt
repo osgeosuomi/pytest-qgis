@@ -12,6 +12,7 @@ changelog
 checkable
 closest
 configs
+conftests
 const
 contextvars
 copyfile

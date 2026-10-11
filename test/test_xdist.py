@@ -16,6 +16,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pytest-qgis.  If not, see <https://www.gnu.org/licenses/>.
 #
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 import pytest
@@ -30,15 +31,16 @@ pytest.importorskip("xdist")
 
 class StubConfig:
     def __init__(
-        self, workerinput: dict[str, str] | None = None, dist: str = "no"
+        self,
+        workerinput: dict[str, str] | None = None,
+        dist: str = "no",
+        numprocesses: int | None = None,
     ) -> None:
         if workerinput is not None:
             self.workerinput = workerinput
-        self._dist = dist
-
-    def getoption(self, name: str, default: object = None):  # noqa: ARG002
-        assert name == "dist"
-        return self._dist
+        self.known_args_namespace = SimpleNamespace(
+            dist=dist, numprocesses=numprocesses
+        )
 
 
 def test_worker_id_from_workerinput(monkeypatch: pytest.MonkeyPatch):
@@ -62,6 +64,12 @@ def test_worker_id_missing(monkeypatch: pytest.MonkeyPatch):
 def test_controller_detected(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("PYTEST_XDIST_WORKER", raising=False)
     config = StubConfig(dist="load")
+    assert _is_xdist_controller(config)
+
+
+def test_controller_detected_from_numprocesses(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.delenv("PYTEST_XDIST_WORKER", raising=False)
+    config = StubConfig(numprocesses=2)
     assert _is_xdist_controller(config)
 
 

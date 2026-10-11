@@ -102,3 +102,24 @@ def test_ini_gui(
     result.assert_outcomes(
         passed=1 if not gui_enabled else 0, failed=1 if gui_enabled else 0
     )
+
+
+def test_iface_is_patched_when_imported_in_root_conftest(testdir: "Testdir"):
+    testdir.makeconftest(
+        """
+        from qgis.utils import iface
+
+        CONFTEST_IFACE = iface
+    """
+    )
+    testdir.makepyfile(
+        """
+        from conftest import CONFTEST_IFACE
+
+        def test_iface(qgis_iface):
+            assert CONFTEST_IFACE is qgis_iface
+    """
+    )
+    # Subprocess, since an in-process run would leak its QGIS GUI to the outer session
+    result = testdir.runpytest_subprocess("-p", "no:pytest-qt", "--qgis_disable_gui")
+    result.assert_outcomes(passed=1)

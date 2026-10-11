@@ -64,13 +64,11 @@ for the ways markers can be used.
 
 ### Hooks
 
-* `pytest_configure` hook is used to initialize and
+* `pytest_load_initial_conftests` hook is used to initialize and
   configure [`QgsApplication`](https://qgis.org/pyqgis/master/core/QgsApplication.html).
-  It is also used to patch `qgis.utils.iface` with `qgis_iface` automatically.
-
-  > Be careful not to import modules importing `qgis.utils.iface` in the root of conftest,
-  > because the `pytest_configure` hook has not yet patched `iface` in that point. See
-  > [this issue](https://github.com/osgeosuomi/pytest-qgis/issues/35) for details.
+  It is also used to patch `qgis.utils.iface` with `qgis_iface` automatically. Since
+  this happens before any conftest file is imported, also the conftest files can import
+  modules that import `qgis.utils.iface`.
 
 * `pytest_runtest_teardown` hook is used to ensure that all layer fixtures of any scope
   are cleaned properly without causing segmentation faults. The layer fixtures that are

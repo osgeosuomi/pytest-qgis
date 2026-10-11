@@ -186,10 +186,25 @@ def pytest_addoption(parser: "Parser") -> None:
 
 
 @pytest.hookimpl(tryfirst=True)
+def pytest_load_initial_conftests(early_config: "Config") -> None:
+    """Initialize qgis session before the initial conftest files are imported.
+
+    This way modules importing qgis.utils.iface in conftest files get the stub iface.
+    """
+    _configure_qgis(early_config)
+
+
+@pytest.hookimpl(tryfirst=True)
 def pytest_configure(config: "Config") -> None:
     """Configure and initialize qgis session for all tests."""
     config.addinivalue_line("markers", SHOW_MAP_MARKER_DESCRIPTION)
 
+    # The plugin was registered after the initial conftests were loaded
+    if not hasattr(config, "_plugin_settings"):
+        _configure_qgis(config)
+
+
+def _configure_qgis(config: "Config") -> None:
     settings = _parse_settings(config)
     config._plugin_settings = settings  # noqa: SLF001
 
@@ -383,9 +398,17 @@ def _get_xdist_worker_id(config: "Config") -> str | None:
 
 def _is_xdist_controller(config: "Config") -> bool:
     """Check if this is the pytest-xdist controller process."""
-    return _get_xdist_worker_id(config) is None and config.getoption(
-        "dist", "no"
-    ) not in ("no", None)
+    if _get_xdist_worker_id(config) is not None:
+        return False
+    # xdist sets dist based on numprocesses only after the initial conftests are loaded
+    return _getoption(config, "dist", "no") not in ("no", None) or bool(
+        _getoption(config, "numprocesses", None)
+    )
+
+
+def _getoption(config: "Config", name: str, default: object = None) -> object:
+    """Get command line option value, also before the command line is fully parsed."""
+    return getattr(config.known_args_namespace, name, default)
 
 
 def _load_qgis_settings(config: "Config") -> None:
@@ -620,22 +643,22 @@ def _configure_qgis_map(  # noqa: QGS105
 
 
 def _parse_settings(config: "Config") -> Settings:
-    global _QGIS_SERVER  #  noqa: PLW0603
+    global _QGIS_SERVER  # noqa: PLW0603
 
     qgis_server = config.getini(SERVER_KEY)
     if qgis_server:
         gui_enabled = False
         _QGIS_SERVER = True
     else:
-        gui_disabled = config.getoption(GUI_DISABLE_KEY)
+        gui_disabled = _getoption(config, GUI_DISABLE_KEY)
         if not gui_disabled:
             gui_enabled = config.getini(GUI_ENABLED_KEY)
         else:
             gui_enabled = not gui_disabled
 
-    qgis_init_disabled = config.getoption(DISABLE_QGIS_INIT_KEY)
+    qgis_init_disabled = _getoption(config, DISABLE_QGIS_INIT_KEY)
 
-    qgis_exit_disabled = config.getoption(EXIT_DISABLED_KEY)
+    qgis_exit_disabled = _getoption(config, EXIT_DISABLED_KEY)
     if not qgis_exit_disabled:
         qgis_exit_disabled = config.getini(EXIT_DISABLED_KEY)
 
