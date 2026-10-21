@@ -114,3 +114,27 @@ class MockMessageBar(QgsMessageBarOriginal):
     ) -> None:
         """Pushes a warning message that must be manually dismissed by the user."""
         self.pushMessage(title, message, Qgis.MessageLevel.Warning, -1)
+
+    def pushInfo(  # noqa: N802
+        self,
+        title: str,
+        message: str,
+    ) -> None:
+        """Pushes a info message with default timeout to the message bar."""
+        self.pushMessage(title, message, Qgis.MessageLevel.Info, -1)
+
+    def pushCritical(  # noqa: N802
+        self,
+        title: str,
+        message: str,
+    ) -> None:
+        """Pushes a critical message that must be manually dismissed by the user."""
+        self.pushMessage(title, message, Qgis.MessageLevel.Critical, -1)
+
+    def pushSuccess(  # noqa: N802
+        self,
+        title: str,
+        message: str,
+    ) -> None:
+        """Pushes a success messagewith default timeout to the message bar."""
+        self.pushMessage(title, message, Qgis.MessageLevel.Success, -1)
