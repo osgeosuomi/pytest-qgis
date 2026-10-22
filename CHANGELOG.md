@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixes
+
+* Add support for log messages submitted py pushSuccess, pushInfo and pushCritical
+
 ## 5.0.1 - 2026-10-11
 
 ### Fixes
