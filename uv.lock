@@ -935,7 +935,7 @@ wheels = [
 
 [[package]]
 name = "pytest-qgis"
-version = "5.0.2"
+version = "5.0.2.post0"
 source = { editable = "." }
 default-groups = ["dev", "lint"]
 dependencies = [
