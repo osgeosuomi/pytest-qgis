@@ -73,13 +73,22 @@ def test_message_bar(
     qgis_iface.messageBar().pushMessage(*args, **kwargs)
     assert qgis_iface.messageBar().messages.get(expected_level) == [expected_message]
 
+
 @pytest.mark.usefixtures("qgis_new_project")
 def test_push(qgis_iface: "QgisInterface"):
     qgis_iface.messageBar().pushSuccess("success-title", "success-message")
-    assert qgis_iface.messageBar().messages.get(Qgis.MessageLevel.Success) == ["success-title:success-message"]
+    assert qgis_iface.messageBar().messages.get(Qgis.MessageLevel.Success) == [
+        "success-title:success-message"
+    ]
     qgis_iface.messageBar().pushInfo("info-title", "info-message")
-    assert qgis_iface.messageBar().messages.get(Qgis.MessageLevel.Info) == ["info-title:info-message"]
+    assert qgis_iface.messageBar().messages.get(Qgis.MessageLevel.Info) == [
+        "info-title:info-message"
+    ]
     qgis_iface.messageBar().pushWarning("warning-title", "warning-message")
-    assert qgis_iface.messageBar().messages.get(Qgis.MessageLevel.Warning) == ["warning-title:warning-message"]
+    assert qgis_iface.messageBar().messages.get(Qgis.MessageLevel.Warning) == [
+        "warning-title:warning-message"
+    ]
     qgis_iface.messageBar().pushCritical("critical-title", "critical-message")
-    assert qgis_iface.messageBar().messages.get(Qgis.MessageLevel.Critical) == ["critical-title:critical-message"]
+    assert qgis_iface.messageBar().messages.get(Qgis.MessageLevel.Critical) == [
+        "critical-title:critical-message"
+    ]
