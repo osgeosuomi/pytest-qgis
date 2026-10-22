@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 5.0.2 - 2026-10-22
 
 ### Fixes
 
